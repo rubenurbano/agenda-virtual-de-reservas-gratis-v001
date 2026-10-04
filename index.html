@@ -1,0 +1,2692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda Virtual de Reservas Gratis — Tutorial paso a paso</title>
+<style>
+/* ============================================================
+   VARIABLES Y BASE
+   ============================================================ */
+:root{
+  --bg:#0a0e1a;
+  --card:#0f172a;
+  --accent:#1e3a5f;
+  --accent-soft:#16283f;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --border:#1e293b;
+  --blue:#3b82f6;
+  --blue-l:#60a5fa;
+  --ok:#22c55e;
+  --warn:#f59e0b;
+  --danger:#ef4444;
+  --wa:#25d366;
+  --radius:14px;
+  --shadow:0 8px 26px rgba(0,0,0,.35);
+}
+body.light{
+  --bg:#eef2f7;
+  --card:#ffffff;
+  --accent:#dbeafe;
+  --accent-soft:#eff6ff;
+  --text:#0f172a;
+  --muted:#475569;
+  --border:#cbd5e1;
+  --shadow:0 6px 20px rgba(15,23,42,.10);
+}
+*{box-sizing:border-box;}
+html{font-size:16px;scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.65;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:60px;
+}
+img,svg{max-width:100%;}
+a{color:var(--blue-l);}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .5em;}
+h1{font-size:1.75rem;}
+h2{font-size:1.4rem;}
+h3{font-size:1.15rem;}
+h4{font-size:1.02rem;}
+p{margin:0 0 .9em;}
+ul,ol{margin:0 0 1em;padding-left:1.35em;}
+li{margin-bottom:.45em;}
+code{
+  background:var(--accent-soft);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:1px 6px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.88em;
+  word-break:break-word;
+}
+pre{
+  background:var(--accent-soft);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 14px;
+  overflow-x:auto;
+  font-size:.85rem;
+  line-height:1.5;
+}
+pre code{background:none;border:0;padding:0;}
+
+/* ============================================================
+   SVG SPRITE OCULTO
+   ============================================================ */
+.svg-defs{position:absolute;width:0;height:0;overflow:hidden;}
+
+/* ============================================================
+   BARRA SUPERIOR
+   ============================================================ */
+.toolbar{
+  position:sticky;top:0;z-index:60;
+  background:rgba(10,14,26,.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:8px 10px;
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+}
+body.light .toolbar{background:rgba(255,255,255,.94);}
+.toolbar .brand{
+  font-weight:700;font-size:.82rem;letter-spacing:.4px;
+  color:var(--blue-l);margin-right:auto;white-space:nowrap;
+}
+.btn{
+  background:var(--card);
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:9px;
+  padding:6px 10px;
+  font-size:.8rem;
+  font-family:inherit;
+  cursor:pointer;
+  transition:.15s;
+  white-space:nowrap;
+}
+.btn:hover{background:var(--accent);border-color:var(--blue);}
+.btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+.search-wrap{position:relative;display:flex;align-items:center;}
+#searchInput{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:9px;
+  color:var(--text);
+  padding:6px 10px;
+  font-size:.8rem;
+  font-family:inherit;
+  width:130px;
+}
+#searchInput:focus{outline:2px solid var(--blue);outline-offset:1px;}
+#searchInfo{font-size:.7rem;color:var(--muted);margin-left:6px;white-space:nowrap;}
+
+/* Barra de progreso */
+.progress-bar{
+  position:fixed;top:0;left:0;height:3px;width:0%;
+  background:linear-gradient(90deg,var(--blue),var(--ok));
+  z-index:100;transition:width .3s;
+}
+
+/* ============================================================
+   CONTENEDOR
+   ============================================================ */
+.wrap{max-width:920px;margin:0 auto;padding:16px 14px 40px;}
+
+/* ============================================================
+   HERO SVG
+   ============================================================ */
+.svg-hero{
+  display:block;
+  width:100%;
+  max-width:520px;
+  margin:4px auto 14px;
+  border-radius:18px;
+  box-shadow:var(--shadow);
+}
+
+/* ============================================================
+   PESTAÑAS
+   ============================================================ */
+.tabs{
+  display:flex;gap:6px;overflow-x:auto;
+  padding:6px 0 12px;
+  scrollbar-width:thin;
+  -webkit-overflow-scrolling:touch;
+}
+.tab{
+  flex:0 0 auto;
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--muted);
+  border-radius:999px;
+  padding:8px 15px;
+  font-size:.82rem;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  transition:.18s;
+  white-space:nowrap;
+}
+.tab:hover{color:var(--text);border-color:var(--blue);}
+.tab.active{
+  background:var(--blue);
+  border-color:var(--blue);
+  color:#fff;
+  box-shadow:0 4px 14px rgba(59,130,246,.35);
+}
+
+/* ============================================================
+   PANELES
+   ============================================================ */
+.panel{display:none;animation:fade .28s ease;}
+.panel.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+/* ============================================================
+   TARJETAS Y CAJAS
+   ============================================================ */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 16px 8px;
+  margin:0 0 16px;
+  box-shadow:var(--shadow);
+}
+.card > :last-child{margin-bottom:0;}
+.card h2,.card h3{margin-top:0;}
+
+.box{
+  border-radius:11px;
+  padding:11px 13px;
+  margin:12px 0;
+  font-size:.9rem;
+  border-left:5px solid var(--blue);
+  background:var(--accent-soft);
+}
+.box p:last-child{margin-bottom:0;}
+.box.tip{border-left-color:var(--blue);}
+.box.warn{border-left-color:var(--warn);}
+.box.ok{border-left-color:var(--ok);}
+.box.bad{border-left-color:var(--danger);}
+.box strong{display:inline;}
+
+/* ============================================================
+   PASOS
+   ============================================================ */
+.step-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;
+  margin:0 0 20px;
+  box-shadow:var(--shadow);
+}
+.step-head{
+  display:flex;align-items:flex-start;gap:12px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:12px;margin-bottom:14px;
+}
+.step-num{
+  flex:0 0 auto;
+  width:36px;height:36px;border-radius:10px;
+  background:var(--blue);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:1.05rem;
+}
+.step-head h3{margin:0;font-size:1.12rem;}
+.goal{
+  background:var(--accent-soft);
+  border-radius:9px;
+  padding:9px 12px;
+  font-size:.88rem;
+  margin:0 0 14px;
+  border:1px dashed var(--accent);
+}
+.actions{counter-reset:none;}
+.actions li{margin-bottom:.6em;}
+
+/* ============================================================
+   CHECKLIST
+   ============================================================ */
+.checklist{
+  background:var(--accent-soft);
+  border:1px solid var(--border);
+  border-radius:11px;
+  padding:12px 14px;
+  margin:14px 0 4px;
+}
+.checklist h4{margin:0 0 8px;font-size:.92rem;color:var(--blue-l);}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:.87rem;margin-bottom:7px;cursor:pointer;}
+.chk input{
+  flex:0 0 auto;width:18px;height:18px;margin-top:2px;
+  accent-color:var(--ok);cursor:pointer;
+}
+.chk input:checked + span{opacity:.6;text-decoration:line-through;}
+
+/* ============================================================
+   TABLAS
+   ============================================================ */
+.table-scroll{overflow-x:auto;margin:12px 0;-webkit-overflow-scrolling:touch;}
+table{
+  width:100%;border-collapse:collapse;
+  font-size:.85rem;min-width:420px;
+}
+th,td{
+  border:1px solid var(--border);
+  padding:8px 10px;text-align:left;vertical-align:top;
+}
+th{background:var(--accent);color:var(--text);font-weight:700;}
+tbody tr:nth-child(even){background:rgba(30,58,95,.14);}
+body.light tbody tr:nth-child(even){background:#f8fafc;}
+
+/* ============================================================
+   DESPLEGABLES
+   ============================================================ */
+details{
+  background:var(--accent-soft);
+  border:1px solid var(--border);
+  border-radius:10px;
+  margin:10px 0;
+  padding:0;
+}
+details summary{
+  cursor:pointer;
+  padding:10px 13px;
+  font-weight:600;
+  font-size:.88rem;
+  list-style:none;
+  display:flex;align-items:center;gap:8px;
+}
+details summary::-webkit-details-marker{display:none;}
+details summary::before{
+  content:"▸";color:var(--blue-l);font-size:.9em;transition:.2s;
+}
+details[open] summary::before{transform:rotate(90deg);}
+details .inner{padding:0 13px 12px;font-size:.87rem;}
+
+/* ============================================================
+   CÓDIGO COPIABLE
+   ============================================================ */
+.copy-row{
+  display:flex;align-items:center;gap:8px;
+  background:var(--accent-soft);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:8px 10px;margin:10px 0;
+  flex-wrap:wrap;
+}
+.copy-row code{flex:1 1 180px;background:none;border:0;padding:0;font-size:.85rem;}
+.copyBtn{
+  background:var(--blue);color:#fff;border:0;border-radius:8px;
+  padding:6px 12px;font-size:.78rem;font-weight:700;cursor:pointer;
+  font-family:inherit;
+}
+.copyBtn:hover{opacity:.88;}
+
+/* ============================================================
+   DIAGRAMA DE FLUJO (CSS)
+   ============================================================ */
+.flow{
+  display:flex;flex-direction:column;gap:8px;margin:14px 0;
+}
+.flow-node{
+  background:var(--accent-soft);
+  border:1px solid var(--accent);
+  border-radius:10px;
+  padding:10px 13px;
+  font-size:.85rem;
+}
+.flow-node b{color:var(--blue-l);}
+.flow-arrow{text-align:center;color:var(--blue-l);font-size:1.1rem;line-height:1;}
+
+/* ============================================================
+   VARIOS
+   ============================================================ */
+.pill{
+  display:inline-block;background:var(--accent);border:1px solid var(--blue);
+  border-radius:999px;padding:2px 10px;font-size:.72rem;font-weight:700;
+  color:var(--blue-l);margin-right:6px;
+}
+.grid-2{display:grid;grid-template-columns:1fr;gap:12px;}
+.mini{font-size:.8rem;color:var(--muted);}
+hr.sep{border:0;border-top:1px solid var(--border);margin:20px 0;}
+mark.search-hl{background:#fde047;color:#111;border-radius:3px;padding:0 2px;}
+
+/* Botón volver arriba */
+.to-top{
+  position:fixed;right:14px;bottom:14px;z-index:70;
+  width:44px;height:44px;border-radius:50%;
+  background:var(--blue);color:#fff;border:0;
+  font-size:1.2rem;cursor:pointer;
+  box-shadow:0 6px 18px rgba(59,130,246,.45);
+  display:none;
+}
+.to-top.show{display:block;}
+
+/* Créditos */
+.credit-name{
+  font-size:2rem;font-weight:800;letter-spacing:-.5px;
+  color:var(--blue-l);margin:0 0 4px;
+}
+.credit-sub{color:var(--muted);font-size:.95rem;margin:0 0 16px;}
+.fixed-date{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:1rem;background:var(--accent-soft);
+  border:1px solid var(--border);border-radius:9px;
+  padding:10px 14px;display:inline-block;
+}
+
+/* Toast */
+#toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+  background:var(--blue);color:#fff;padding:10px 18px;border-radius:10px;
+  font-size:.85rem;opacity:0;pointer-events:none;transition:.25s;z-index:200;
+  max-width:90vw;text-align:center;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media(min-width:700px){
+  html{font-size:17px;}
+  .wrap{padding:24px 22px 60px;}
+  .grid-2{grid-template-columns:1fr 1fr;}
+  h1{font-size:2.1rem;}
+}
+
+/* ============================================================
+   IMPRESIÓN / GUARDAR COMO PDF
+   ============================================================ */
+@media print{
+  @page{size:A4 portrait;margin:14mm 12mm;}
+
+  html,body{
+    background:#fff !important;
+    color:#000 !important;
+    padding:0 !important;
+    margin:0 !important;
+    font-size:11pt !important;
+    line-height:1.45 !important;
+  }
+
+  .toolbar,.tabs,.to-top,.copyBtn,.progress-bar,.svg-hero,nav,.search-hl,#toast,.no-print{
+    display:none !important;
+  }
+
+  .panel{
+    display:block !important;
+    page-break-after:auto !important;
+    animation:none !important;
+  }
+  .panel::before{
+    content:attr(data-print-title);
+    display:block;
+    font-size:15pt;
+    font-weight:800;
+    border-bottom:2.5px solid #000;
+    padding-bottom:4px;
+    margin:0 0 12px;
+    page-break-after:avoid;
+  }
+
+  *{box-shadow:none !important;text-shadow:none !important;background-image:none !important;}
+
+  .card,.step-card,.box,.checklist,.copy-row,details,.flow-node,.goal{
+    background:#fff !important;
+    border:1px solid #999 !important;
+    color:#000 !important;
+    page-break-inside:avoid;
+  }
+  .box{border-left:4px solid #555 !important;}
+  .goal{border:1px dashed #777 !important;}
+
+  .step-head{border-bottom:1px solid #999 !important;}
+  .step-num{
+    background:#fff !important;color:#000 !important;
+    border:2px solid #000 !important;
+  }
+
+  h1,h2,h3,h4,.credit-name,.credit-sub{color:#000 !important;}
+  p,li,td,th,summary,.mini,.box,.goal,code{color:#000 !important;}
+
+  .pill,.btn{
+    background:#fff !important;color:#000 !important;border:1px solid #000 !important;
+  }
+
+  code,pre{
+    background:#f3f4f6 !important;color:#000 !important;
+    border:1px solid #bbb !important;
+  }
+  pre{
+    overflow:visible !important;
+    white-space:pre-wrap !important;
+    word-break:break-word !important;
+    page-break-inside:avoid;
+  }
+
+  .table-scroll{overflow:visible !important;}
+  table{
+    width:100% !important;min-width:0 !important;
+    border-collapse:collapse !important;
+    page-break-inside:auto;
+  }
+  th,td{
+    border:1px solid #777 !important;
+    color:#000 !important;
+    background:#fff !important;
+    padding:5px 7px !important;
+    font-size:9.5pt !important;
+  }
+  th{background:#e5e7eb !important;font-weight:700 !important;}
+  tr{page-break-inside:avoid;}
+
+  details{border:1px solid #999 !important;page-break-inside:avoid;}
+  details summary{font-weight:700 !important;}
+
+  mark,.search-hl{background:transparent !important;color:#000 !important;}
+
+  a{color:#000 !important;text-decoration:underline !important;}
+
+  .chk input{
+    -webkit-appearance:none;appearance:none;
+    width:12px;height:12px;border:1.5px solid #000;background:#fff;
+    display:inline-block;vertical-align:middle;
+  }
+  .chk input:checked::after{content:"X";font-size:10px;font-weight:900;color:#000;display:block;margin-top:-3px;text-align:center;}
+  .chk input:checked + span{text-decoration:line-through;opacity:.75;}
+
+  .fixed-date{border:1px solid #999 !important;background:#fff !important;}
+
+  hr.sep{border-top:1px solid #999 !important;}
+  .svg-defs{display:none !important;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     SPRITE SVG — DEFINIDO UNA SOLA VEZ Y REUTILIZADO
+     ============================================================ -->
+<svg class="svg-defs" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="svgHero" viewBox="0 0 420 260">
+    <!-- Fondo -->
+    <rect x="0" y="0" width="420" height="260" rx="18" fill="#0a0e1a"/>
+    <rect x="0.75" y="0.75" width="418.5" height="258.5" rx="17.25" fill="none" stroke="#1e3a5f" stroke-width="1.5"/>
+
+    <!-- Calendario -->
+    <rect x="24" y="46" width="196" height="172" rx="14" fill="#0f172a" stroke="#1e3a5f" stroke-width="2"/>
+    <path d="M24 60a14 14 0 0 1 14-14h168a14 14 0 0 1 14 14v16H24z" fill="#1e3a5f"/>
+    <rect x="62" y="32" width="9" height="26" rx="4.5" fill="#3b82f6"/>
+    <rect x="173" y="32" width="9" height="26" rx="4.5" fill="#3b82f6"/>
+    <rect x="42" y="50" width="76" height="9" rx="4.5" fill="#60a5fa"/>
+
+    <!-- Celdas del calendario: se "llenan" en cascada -->
+    <g fill="#1e3a5f">
+      <rect x="40" y="92" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="0s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="84" y="92" width="36" height="28" rx="6" fill="#3b82f6" opacity="0.9">
+        <animate attributeName="opacity" values="0.9;1;1;0.35" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="0.2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="128" y="92" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="0.4s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="172" y="92" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="0.6s" repeatCount="indefinite"/>
+      </rect>
+
+      <rect x="40" y="130" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="0.8s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="84" y="130" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="1s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="128" y="130" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="1.2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="172" y="130" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="1.4s" repeatCount="indefinite"/>
+      </rect>
+
+      <rect x="40" y="168" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="1.6s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="84" y="168" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="1.8s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="128" y="168" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="2s" repeatCount="indefinite"/>
+      </rect>
+      <rect x="172" y="168" width="36" height="28" rx="6" opacity="0.12">
+        <animate attributeName="opacity" values="0.12;0.92;0.92;0.12" keyTimes="0;0.07;0.62;0.72" dur="6s" begin="2.2s" repeatCount="indefinite"/>
+      </rect>
+    </g>
+
+    <!-- Reloj: aguja girando -->
+    <g>
+      <circle cx="315" cy="100" r="48" fill="#0f172a" stroke="#1e3a5f" stroke-width="3"/>
+      <circle cx="315" cy="100" r="39" fill="none" stroke="#1e3a5f" stroke-width="1" stroke-dasharray="3 6"/>
+      <line x1="315" y1="100" x2="315" y2="62" stroke="#3b82f6" stroke-width="4" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0 315 100" to="360 315 100" dur="5s" repeatCount="indefinite"/>
+      </line>
+      <line x1="315" y1="100" x2="315" y2="76" stroke="#60a5fa" stroke-width="3" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" from="0 315 100" to="360 315 100" dur="24s" repeatCount="indefinite"/>
+      </line>
+      <circle cx="315" cy="100" r="5" fill="#60a5fa"/>
+    </g>
+
+    <!-- Burbuja de WhatsApp con puntos animados -->
+    <g>
+      <rect x="238" y="178" width="54" height="34" rx="11" fill="#0f172a" stroke="#25d366" stroke-width="2"/>
+      <path d="M252 211l-5 9 13-9z" fill="#0f172a" stroke="#25d366" stroke-width="2" stroke-linejoin="round"/>
+      <circle cx="253" cy="195" r="3.2" fill="#25d366">
+        <animate attributeName="opacity" values="0.25;1;0.25" dur="1.5s" begin="0s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="265" cy="195" r="3.2" fill="#25d366">
+        <animate attributeName="opacity" values="0.25;1;0.25" dur="1.5s" begin="0.3s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="277" cy="195" r="3.2" fill="#25d366">
+        <animate attributeName="opacity" values="0.25;1;0.25" dur="1.5s" begin="0.6s" repeatCount="indefinite"/>
+      </circle>
+    </g>
+
+    <!-- Círculo de confirmación con check que se dibuja -->
+    <g>
+      <circle cx="350" cy="196" r="28" fill="#0f172a" stroke="#22c55e" stroke-width="3"/>
+      <path d="M338 196l8 9 16-19" fill="none" stroke="#22c55e" stroke-width="4"
+            stroke-linecap="round" stroke-linejoin="round"
+            stroke-dasharray="42" stroke-dashoffset="42">
+        <animate attributeName="stroke-dashoffset" values="42;0;0;42" keyTimes="0;0.18;0.85;1" dur="5s" repeatCount="indefinite"/>
+      </path>
+    </g>
+
+    <!-- Línea punteada decorativa calendario -> reloj -->
+    <line x1="224" y1="130" x2="264" y2="110" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="4 5">
+      <animate attributeName="stroke-dashoffset" values="0;-18" dur="1.6s" repeatCount="indefinite"/>
+    </line>
+  </symbol>
+</svg>
+
+<!-- Barra de progreso -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- ============================================================
+     TOOLBAR
+     ============================================================ -->
+<div class="toolbar no-print">
+  <span class="brand">📅 AGENDA DE RESERVAS</span>
+
+  <div class="search-wrap">
+    <input type="search" id="searchInput" placeholder="Buscar…" aria-label="Buscar en el tutorial">
+    <span id="searchInfo"></span>
+  </div>
+
+  <button class="btn" id="btnMinus" title="Reducir tamaño de texto">A−</button>
+  <button class="btn" id="btnPlus" title="Aumentar tamaño de texto">A+</button>
+  <button class="btn" id="btnTheme" title="Cambiar modo oscuro/claro">🌙</button>
+  <button class="btn" id="btnPrint" title="Imprimir o guardar como PDF">🖨️ PDF</button>
+  <button class="btn" id="btnReset" title="Reiniciar el progreso guardado">↺</button>
+</div>
+
+<div class="wrap">
+
+  <!-- ============================================================
+       PESTAÑAS
+       ============================================================ -->
+  <div class="tabs no-print" role="tablist">
+    <button class="tab active" data-tab="inicio" role="tab">INICIO</button>
+    <button class="tab" data-tab="conceptos" role="tab">CONCEPTOS</button>
+    <button class="tab" data-tab="procedimiento" role="tab">PROCEDIMIENTO</button>
+    <button class="tab" data-tab="practica" role="tab">PRÁCTICA</button>
+    <button class="tab" data-tab="errores" role="tab">ERRORES</button>
+    <button class="tab" data-tab="resumen" role="tab">RESUMEN</button>
+    <button class="tab" data-tab="fuentes" role="tab">FUENTES</button>
+    <button class="tab" data-tab="creditos" role="tab">CRÉDITOS</button>
+  </div>
+
+  <!-- ============================================================
+       PANEL: INICIO
+       ============================================================ -->
+  <section class="panel active" id="panel-inicio" data-print-title="INICIO">
+
+    <svg class="svg-hero" viewBox="0 0 420 260" role="img"
+         aria-label="Ilustración animada: un calendario que se llena de citas, un reloj girando, un mensaje de WhatsApp y una confirmación con check">
+      <use href="#svgHero"></use>
+    </svg>
+
+    <div class="card">
+      <h1>📅 Agenda Virtual de Reservas Gratis</h1>
+      <p style="font-size:1.02rem;color:var(--muted);margin-bottom:14px;">
+        Tutorial paso a paso para instalarla <strong>sin saber nada de programación</strong>.
+      </p>
+
+      <div class="box tip">
+        <strong>👋 Para quién es esta guía:</strong> dueños de barberías, clínicas, centros de estética,
+        talleres, academias y pequeños negocios que quieren que sus clientes reserven citas por internet,
+        <strong>sin pagar mensualidades</strong> y <strong>sin saber programar</strong>.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 ¿Qué vas a conseguir?</h2>
+      <p>Al terminar este tutorial tendrás:</p>
+      <ul>
+        <li>✅ Una <strong>página web de reservas</strong> donde tus clientes eligen servicio, especialista, día y hora.</li>
+        <li>✅ Un <strong>panel privado de administración</strong> (protegido con un PIN) donde confirmas o cancelas citas.</li>
+        <li>✅ <strong>Confirmaciones por WhatsApp</strong> con un solo clic.</li>
+        <li>✅ (Opcional) Un <strong>enlace corto y profesional</strong>, como <code>miagenda.netlify.app</code>, ideal para Instagram o WhatsApp.</li>
+        <li>✅ Todo <strong>gratis</strong> y manejado desde una hoja de cálculo que ya sabes usar.</li>
+      </ul>
+      <div class="box ok">
+        <strong>⏱️ Tiempo estimado:</strong> entre 40 y 60 minutos la primera vez. Ve con calma, no hay prisa.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🧰 ¿Qué necesitas antes de empezar?</h2>
+      <ul>
+        <li>Una <strong>cuenta de Google</strong> que sea tuya y que no vayas a perder.</li>
+        <li>Una <strong>computadora</strong> (el proceso es mucho más cómodo que en el móvil).</li>
+        <li>El <strong>paquete ZIP</strong> que acompaña a esta guía, ya descargado.</li>
+        <li><strong>Conexión a internet</strong> para trabajar con Google Drive, Apps Script y Netlify.</li>
+        <li>Los <strong>datos de tu negocio</strong>: nombre, teléfono de WhatsApp, servicios con duración y precio, especialistas y horarios de atención.</li>
+      </ul>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> el paquete ZIP se descarga desde el enlace que recibiste junto a esta guía.
+        El documento original lo deja como marcador: <code>[ENLACE DE DESCARGA DEL PAQUETE .ZIP]</code>.
+        Necesitas ese enlace real para empezar el Paso 1.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🧭 Cómo leer este tutorial</h2>
+      <ul>
+        <li>Los pasos están <strong>numerados</strong>: haz los clics en el orden indicado.</li>
+        <li>Cada paso tiene <strong>una sola acción</strong>. Si un paso tiene dos clics, se escriben como dos pasos.</li>
+        <li>Cada bloque de trabajo termina con un <strong>resultado esperado</strong> y una <strong>lista de comprobación</strong>.</li>
+        <li>Cada vez que aparezca una palabra técnica, se explica enseguida con un ejemplo de la vida diaria.</li>
+      </ul>
+
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> un atajo o truco que te facilita la vida.
+      </div>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> un punto delicado. Si lo saltas, algo puede no funcionar.
+      </div>
+
+      <p class="mini">Si algo te suena a chino, ¡es normal! Para eso está esta guía.</p>
+    </div>
+
+    <div class="card">
+      <h2>🗺️ Mapa del tutorial</h2>
+      <div class="flow">
+        <div class="flow-node"><b>Paso 1</b> — Descarga y preparación de los archivos</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>Paso 2</b> — Subir y configurar la base de datos en Google Drive</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>Paso 3</b> — Instalación del código en Google Apps Script</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>Paso 4</b> — Publicación e implementación de la aplicación web</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>Paso 5</b> — Prueba de reservas y uso del panel de administración</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>Paso 6</b> (opcional) — Crear una URL profesional gratis con Netlify</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>Paso 7</b> — Preguntas frecuentes y consejos útiles</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📌 Objetivos de aprendizaje</h2>
+      <label class="chk"><input type="checkbox" data-k="obj1"><span>Entender qué es una base de datos, un backend y un frontend, con analogías cotidianas.</span></label>
+      <label class="chk"><input type="checkbox" data-k="obj2"><span>Convertir un Excel en una Hoja de cálculo de Google y configurar sus 6 pestañas.</span></label>
+      <label class="chk"><input type="checkbox" data-k="obj3"><span>Instalar código en Google Apps Script copiando y pegando, sin programar.</span></label>
+      <label class="chk"><input type="checkbox" data-k="obj4"><span>Publicar una aplicación web con la configuración de permisos correcta.</span></label>
+      <label class="chk"><input type="checkbox" data-k="obj5"><span>Probar una reserva y gestionarla desde el panel de administración con PIN.</span></label>
+      <label class="chk"><input type="checkbox" data-k="obj6"><span>Crear una URL corta y profesional gratis con Netlify (opcional).</span></label>
+      <label class="chk"><input type="checkbox" data-k="obj7"><span>Resolver los errores más frecuentes y aplicar buenas prácticas de seguridad.</span></label>
+    </div>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: CONCEPTOS
+       ============================================================ -->
+  <section class="panel" id="panel-conceptos" data-print-title="CONCEPTOS">
+
+    <div class="card">
+      <h2>🧠 Los conceptos, antes de tocar nada</h2>
+      <p>
+        Antes de hacer clics, conviene entender <strong>qué vas a montar</strong>. No hace falta memorizar nada:
+        solo tener una imagen mental. Vamos con ella.
+      </p>
+
+      <h3>¿Qué es esta agenda, en una frase?</h3>
+      <p>
+        Es una <strong>página web</strong> donde tus clientes eligen servicio, especialista, día y hora.
+        Esa reserva viaja a una <strong>hoja de cálculo de Google</strong> que actúa como libro de citas.
+        Y tú la gestionas desde un <strong>panel privado</strong> protegido con un PIN.
+      </p>
+
+      <div class="flow">
+        <div class="flow-node"><b>👤 Cliente</b> — entra a la página de reservas y elige día y hora</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>⚙️ Apps Script</b> — comprueba disponibilidad y guarda la cita</div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>📊 Hoja de cálculo</b> — guarda la reserva en la pestaña <code>Reservas</code></div>
+        <div class="flow-arrow">▼</div>
+        <div class="flow-node"><b>🔐 Tú, en el panel</b> — confirmas la cita y envías WhatsApp con un clic</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📚 Mini diccionario</h2>
+      <p>Estas son las palabras que vas a oír mucho durante el tutorial.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Palabra</th><th>¿Qué es? (con una analogía)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Archivo ZIP</strong></td><td>Una <strong>caja cerrada</strong> que contiene muchos archivos juntos. Hay que "abrir la caja" (descomprimir) para usarlos.</td></tr>
+            <tr><td><strong>Google Drive</strong></td><td>Tu <strong>armario virtual</strong> de Google: guarda tus archivos en internet y los puedes abrir desde cualquier dispositivo.</td></tr>
+            <tr><td><strong>Hoja de cálculo de Google (Google Sheets)</strong></td><td>Un <strong>cuaderno con tablas</strong>, como Excel, pero que vive en internet. Aquí guardarás tus servicios, horarios y citas.</td></tr>
+            <tr><td><strong>Apps Script</strong></td><td>El <strong>cerebro invisible</strong> de tu agenda. Es un espacio de Google donde se coloca el "programa" que hace que la hoja funcione como una web de reservas. Tú solo pegarás lo que te damos.</td></tr>
+            <tr><td><strong>Backend</strong></td><td>La <strong>trastienda</strong> de un negocio: la parte que el cliente no ve, pero donde se guardan y organizan las cosas. En tu caso, la hoja de cálculo + Apps Script.</td></tr>
+            <tr><td><strong>Frontend</strong></td><td>El <strong>escaparate</strong>: lo que sí ve el cliente (la página con botones y horarios).</td></tr>
+            <tr><td><strong>URL</strong></td><td>La <strong>dirección postal</strong> de una página web (por ejemplo <code>https://www.google.com</code>).</td></tr>
+            <tr><td><strong>Implementar / Publicar</strong></td><td><strong>Abrir la puerta del local</strong> al público: hasta ese momento, solo tú puedes verlo.</td></tr>
+            <tr><td><strong>PIN</strong></td><td>Una <strong>llave numérica</strong> (como la clave de un candado) que protege tu panel de administración.</td></tr>
+            <tr><td><strong>Netlify</strong></td><td>Un servicio gratuito que te presta una <strong>vitrina con dirección bonita y corta</strong> para tu página.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🧩 Las tres analogías que lo explican todo</h2>
+
+      <h3>1. La base de datos es un archivador</h3>
+      <p>
+        Una base de datos es un <strong>archivador ordenado</strong>: cada cajón (pestaña) guarda un tipo de
+        información distinta (servicios, horarios, reservas…). Si abres el cajón equivocado, no encuentras nada.
+        Por eso el nombre de cada cajón importa tanto.
+      </p>
+
+      <h3>2. Apps Script es el empleado robot</h3>
+      <p>
+        Imagina que tu Hoja de cálculo es una <strong>tienda</strong> y Apps Script es el <strong>empleado robot</strong>
+        que atiende en ella: recibe los pedidos de reserva, comprueba la agenda y anota todo. Google te presta ese
+        robot <strong>gratis</strong>. Tú solo tienes que <strong>entregarle sus instrucciones</strong> (el código),
+        y para eso basta con copiar y pegar.
+      </p>
+
+      <h3>3. Implementar es abrir el local</h3>
+      <p>
+        Hasta el Paso 4 has estado <strong>decorando y organizando la tienda con la puerta cerrada</strong>.
+        Implementar es <strong>colgar el cartel de "Abierto"</strong> y obtener la dirección exacta (la URL)
+        para que la gente llegue.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>📦 ¿Qué vas a encontrar dentro del ZIP?</h2>
+      <p>Al abrir la carpeta verás algo parecido a esto:</p>
+      <pre><code>📁 agenda-reservas/
+ ├── 📊 Base de datos (archivo Excel .xlsx)
+ ├── 📁 Apps Script/
+ │    ├── code.gs
+ │    ├── index.html
+ │    ├── admin.html
+ │    ├── estilobase.html
+ │    ├── iconobase64.html
+ │    └── appsscript.json
+ └── 📁 Netlify/
+      └── (archivos para tu enlace profesional, incluido un index.html)</code></pre>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Elemento</th><th>Para qué sirve</th><th>Analogía</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Excel (.xlsx)</strong></td><td>Tu base de datos con 6 pestañas: servicios, horarios, especialistas, etc.</td><td>El <strong>libro de citas</strong> de papel de toda la vida, pero digital.</td></tr>
+            <tr><td><strong>code.gs</strong></td><td>El programa principal que "piensa" y guarda las reservas.</td><td>El <strong>cerebro</strong> de la recepcionista.</td></tr>
+            <tr><td><strong>index.html</strong></td><td>La página que ven tus <strong>clientes</strong> para reservar.</td><td>El <strong>mostrador</strong> de atención al público.</td></tr>
+            <tr><td><strong>admin.html</strong></td><td>La página privada para <strong>ti</strong>: gestionar citas.</td><td>La <strong>oficina</strong> de la administración.</td></tr>
+            <tr><td><strong>estilobase.html</strong></td><td>Los colores y el diseño de las páginas.</td><td>La <strong>decoración</strong> del local.</td></tr>
+            <tr><td><strong>iconobase64.html</strong></td><td>El icono o logo de tu agenda.</td><td>El <strong>letrero</strong> de la entrada.</td></tr>
+            <tr><td><strong>appsscript.json</strong></td><td>Un archivo de ajustes, como la zona horaria.</td><td>La <strong>hora oficial</strong> del reloj de pared.</td></tr>
+            <tr><td><strong>Carpeta Netlify</strong></td><td>Archivos para tener un enlace corto y bonito (paso opcional).</td><td>La <strong>tarjeta de presentación</strong> con tu dirección.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> no necesitas entender qué hace cada archivo por dentro.
+        Solo tendrás que <strong>copiar y pegar</strong> su contenido en el lugar correcto, tal como te indicamos.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🗄️ Las 6 pestañas de tu Hoja de cálculo</h2>
+      <p>
+        Abre tu Hoja de cálculo de Google. En la parte de abajo verás <strong>seis pestañas</strong>,
+        como seis cajones de un archivador.
+      </p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Pestaña</th><th>Qué guarda</th><th>Ejemplo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>Config</code></td><td>La configuración general: nombre del negocio, WhatsApp, colores y mensajes automáticos.</td><td>Nombre: "Barbería López" · WhatsApp: <code>34600123456</code></td></tr>
+            <tr><td><code>Especialistas</code></td><td>Una fila por cada persona que atiende al público.</td><td>Ana, Luis, Marta…</td></tr>
+            <tr><td><code>Servicios</code></td><td>Una fila por cada servicio: nombre, duración en minutos y precio.</td><td>"Corte de cabello" · 30 min · 15 €</td></tr>
+            <tr><td><code>Horarios</code></td><td>Los bloques de días y horas de atención.</td><td>L–V 9:00–13:00 y 15:00–19:00 · S 9:00–14:00</td></tr>
+            <tr><td><code>Bloqueos</code></td><td>Festivos, vacaciones o ausencias puntuales.</td><td>25/12, del 1 al 15 de agosto…</td></tr>
+            <tr><td><code>Reservas</code></td><td>El historial automático de todas las citas.</td><td>Aquí <strong>tú no escribes</strong>; lo hace la agenda sola.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> <strong>no cambies el nombre de las pestañas ni el título de las columnas</strong>
+        (la primera fila). El programa las busca por ese nombre exacto. Sí puedes cambiar <strong>todo el contenido</strong>
+        que está debajo.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🔄 ¿Qué se cambia dónde?</h2>
+      <p>Esta tabla es la más importante de todo el tutorial. Tenla siempre a mano.</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Si quieres…</th><th>Haz esto</th><th>¿Tocas código?</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Cambiar un precio</td><td>Pestaña <code>Servicios</code>: edita el precio</td><td>No</td></tr>
+            <tr><td>Añadir un servicio nuevo</td><td>Pestaña <code>Servicios</code>: añade una fila</td><td>No</td></tr>
+            <tr><td>Cambiar la duración de un servicio</td><td>Pestaña <code>Servicios</code>: edita los minutos</td><td>No</td></tr>
+            <tr><td>Cambiar tus horarios de atención</td><td>Pestaña <code>Horarios</code>: modifica los bloques</td><td>No</td></tr>
+            <tr><td>Añadir un especialista</td><td>Pestaña <code>Especialistas</code>: añade una fila</td><td>No</td></tr>
+            <tr><td>Cerrar por vacaciones o festivo</td><td>Pestaña <code>Bloqueos</code>: anota esas fechas</td><td>No</td></tr>
+            <tr><td>Cambiar nombre, colores o mensajes</td><td>Pestaña <code>Config</code></td><td>No</td></tr>
+            <tr><td>Cambiar el diseño o el comportamiento</td><td>Apps Script: editar <code>.gs</code> o <code>.html</code> y <strong>volver a implementar</strong></td><td>Sí</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: PROCEDIMIENTO
+       ============================================================ -->
+  <section class="panel" id="panel-procedimiento" data-print-title="PROCEDIMIENTO">
+
+    <div class="card">
+      <h2>🛠️ Procedimiento completo, paso a paso</h2>
+      <p>
+        Siete pasos. Cada uno con su objetivo, sus acciones numeradas, el resultado esperado y qué hacer si algo falla.
+        <strong>Haz una sola cosa cada vez</strong> y no saltes de un paso a otro.
+      </p>
+    </div>
+
+    <!-- ================= PASO 1 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">1</div>
+        <h3>Descarga y preparación de los archivos</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> tener en tu computadora todos los archivos necesarios, listos para usar.</p>
+
+      <h4>1.1 · Descargar el paquete ZIP</h4>
+      <div class="box tip">
+        <strong>📦 ¿Qué es un ZIP?</strong> Imagina una <strong>caja de mudanza cerrada</strong>: dentro hay muchas cosas,
+        pero para usarlas tienes que abrirla. Un archivo ZIP junta muchos archivos en uno solo para que sea fácil de descargar.
+      </div>
+      <ol class="actions">
+        <li>Abre el <strong>enlace de descarga</strong> del paquete gratuito que recibiste junto a esta guía.</li>
+        <li>Haz clic en el botón de <strong>Descargar</strong>.</li>
+        <li>Espera a que termine. El archivo se guardará, normalmente, en la carpeta <strong>Descargas</strong>.</li>
+        <li>Localiza el archivo. Tendrá un nombre parecido a <code>agenda-reservas.zip</code>.</li>
+      </ol>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> si no encuentras el archivo, abre el navegador, presiona <code>Ctrl + J</code>
+        (Windows) o <code>Cmd + Shift + J</code> (Mac) y verás la lista de tus descargas recientes.
+      </div>
+
+      <h4>1.2 · Descomprimir el ZIP ("abrir la caja")</h4>
+      <p><strong>En Windows:</strong></p>
+      <ol class="actions">
+        <li>Haz <strong>clic derecho</strong> sobre el archivo <code>.zip</code>.</li>
+        <li>Elige <strong>"Extraer todo…"</strong>.</li>
+        <li>Pulsa <strong>"Extraer"</strong>.</li>
+        <li>Se abrirá una carpeta nueva con todo el contenido.</li>
+      </ol>
+      <p><strong>En Mac:</strong></p>
+      <ol class="actions">
+        <li>Haz <strong>doble clic</strong> sobre el archivo <code>.zip</code>.</li>
+        <li>Aparecerá automáticamente una carpeta con el mismo nombre.</li>
+      </ol>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> no trabajes con los archivos desde <em>dentro</em> del ZIP sin extraerlos.
+        Primero <strong>extrae</strong>, después usa.
+      </div>
+
+      <h4>1.3 · ¿Qué vas a encontrar dentro?</h4>
+      <p>Consulta la tabla completa en la pestaña <strong>CONCEPTOS</strong>. Lo esencial es que verás un archivo Excel,
+        una carpeta <code>Apps Script</code> y una carpeta <code>Netlify</code>.</p>
+
+      <div class="box ok">
+        <strong>✔ Resultado esperado:</strong> tienes una carpeta en tu computadora con el Excel, los archivos de
+        Apps Script y la carpeta de Netlify, todos visibles y accesibles.
+      </div>
+
+      <details>
+        <summary>¿Algo salió mal? (Paso 1)</summary>
+        <div class="inner">
+          <ul>
+            <li><strong>No encuentro el ZIP:</strong> revisa la carpeta Descargas o el historial de descargas del navegador.</li>
+            <li><strong>Al hacer doble clic se abre una vista previa en vez de extraerse:</strong> en Windows usa clic derecho → "Extraer todo…".</li>
+            <li><strong>Veo los archivos pero no puedo editarlos:</strong> probablemente sigues dentro del ZIP. Extrae primero a una carpeta normal.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 1</h4>
+        <label class="chk"><input type="checkbox" data-k="p1a"><span>Descargué el archivo ZIP.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p1b"><span>Lo descomprimí y veo una carpeta con su contenido.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p1c"><span>Encuentro el archivo Excel, la carpeta de Apps Script y la carpeta de Netlify.</span></label>
+      </div>
+    </article>
+
+    <!-- ================= PASO 2 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">2</div>
+        <h3>Subir y configurar la base de datos en Google Drive</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> tener tu "libro de citas" digital funcionando en Google Sheets.</p>
+
+      <div class="box tip">
+        <strong>🗄️ ¿Qué es una base de datos?</strong> Es un <strong>archivador ordenado</strong>: cada cajón (pestaña)
+        guarda un tipo de información distinta (servicios, horarios, reservas…).
+      </div>
+
+      <h4>2.1 · Entrar a Google Drive y crear una carpeta para el proyecto</h4>
+      <ol class="actions">
+        <li>Abre tu navegador y entra a <strong>drive.google.com</strong>.</li>
+        <li>Inicia sesión con tu cuenta de Google (la misma que usarás para tu negocio).</li>
+        <li>En la esquina superior izquierda, haz clic en <strong>"+ Nuevo"</strong>.</li>
+        <li>Elige <strong>"Carpeta nueva"</strong>.</li>
+        <li>Ponle un nombre claro, por ejemplo: <strong><code>Agenda de Reservas - Mi Negocio</code></strong>.</li>
+        <li>Pulsa <strong>"Crear"</strong>.</li>
+        <li>Haz <strong>doble clic</strong> sobre la carpeta para entrar en ella.</li>
+      </ol>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> usa una cuenta de Google que sea <strong>tuya</strong> y que no vayas a perder
+        (no la de un empleado que podría irse). Esa cuenta será la "dueña" de tu agenda.
+      </div>
+
+      <h4>2.2 · Subir el archivo de Excel</h4>
+      <ol class="actions">
+        <li>Dentro de tu carpeta nueva, haz clic en <strong>"+ Nuevo"</strong>.</li>
+        <li>Elige <strong>"Subir archivo"</strong>.</li>
+        <li>Busca en tu computadora el archivo <strong>Excel (.xlsx)</strong> de la carpeta que descomprimiste y selecciónalo.</li>
+        <li>Pulsa <strong>"Abrir"</strong> y espera a que aparezca en tu carpeta de Drive.</li>
+      </ol>
+
+      <h4>2.3 · ⚠️ Paso crítico: convertir el Excel en una Hoja de cálculo de Google</h4>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> este paso es <strong>obligatorio</strong>. El código de tu agenda solo puede
+        trabajar con una <strong>Hoja de cálculo de Google</strong>, no con un archivo Excel. Aunque se parecen mucho,
+        para Google son cosas distintas. Es como tener un documento en Word y necesitar convertirlo a Google Docs.
+      </div>
+      <ol class="actions">
+        <li>En tu carpeta de Drive, haz <strong>doble clic</strong> sobre el archivo Excel que acabas de subir. Se abrirá en modo vista (verás la tabla y, arriba, una etiqueta <strong>.XLSX</strong>).</li>
+        <li>En el menú superior, haz clic en <strong>"Archivo"</strong>.</li>
+        <li>Elige <strong>"Guardar como hoja de cálculo de Google"</strong>.</li>
+        <li>Google creará una <strong>copia nueva</strong> y la abrirá automáticamente en otra pestaña. Fíjate en que <strong>ya no aparece la etiqueta .XLSX</strong> junto al nombre.</li>
+        <li>Comprueba que, en la parte inferior de la pantalla, puedes ver las pestañas de la hoja (<code>Config</code>, <code>Especialistas</code>, etc.).</li>
+      </ol>
+
+      <h4>2.4 · Eliminar el archivo .xlsx original</h4>
+      <p>
+        Ahora tendrás <strong>dos archivos con nombres casi iguales</strong> en tu carpeta: el Excel original y la
+        Hoja de cálculo de Google. <strong>¿Por qué eliminar el Excel?</strong> Para evitar confusiones: si editas por
+        error el archivo equivocado, <strong>tus cambios no aparecerán en la agenda</strong> y pensarás que algo está roto.
+        Es como tener dos copias del libro de citas en dos mostradores distintos: ¡te perderías!
+      </p>
+      <ol class="actions">
+        <li>Vuelve a tu carpeta en Google Drive.</li>
+        <li>Identifica el archivo Excel (tiene un icono <strong>verde con una "X"</strong> y la terminación <strong>.xlsx</strong>).</li>
+        <li>Haz <strong>clic derecho</strong> sobre él.</li>
+        <li>Elige <strong>"Mover a la papelera"</strong>.</li>
+        <li>Te quedará <strong>un solo archivo</strong>: la Hoja de cálculo de Google (icono verde con una cruz blanca).</li>
+      </ol>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> guarda el Excel original en tu computadora (en la carpeta descomprimida).
+        Así, si algún día necesitas empezar de cero, tienes una copia de seguridad.
+      </div>
+
+      <h4>2.5 · Conoce las 6 pestañas</h4>
+      <p>
+        Tienes la descripción completa en la pestaña <strong>CONCEPTOS</strong>. Repásala ahora antes de rellenar datos.
+      </p>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> <strong>no cambies el nombre de las pestañas ni el título de las columnas</strong>
+        (la primera fila). El programa las busca por ese nombre exacto.
+      </div>
+
+      <h4>2.6 · Personaliza tus datos antes de seguir</h4>
+      <ol class="actions">
+        <li>En <strong><code>Config</code></strong>, escribe el nombre de tu negocio y tu teléfono de WhatsApp.</li>
+        <li>En <strong><code>Especialistas</code></strong>, escribe a tu equipo (o solo a ti).</li>
+        <li>En <strong><code>Servicios</code></strong>, escribe tus servicios con duración y precio.</li>
+        <li>En <strong><code>Horarios</code></strong>, indica tus días y horas de atención.</li>
+        <li>Deja <strong><code>Bloqueos</code></strong> y <strong><code>Reservas</code></strong> como están por ahora.</li>
+      </ol>
+
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> para el teléfono escribe solo números, empezando por el código de tu país.
+        Un teléfono mal escrito es la causa más común de que el botón de WhatsApp no funcione.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> al principio basta con <strong>dos o tres servicios</strong>.
+        Siempre podrás añadir más después, sin tocar ningún código.
+      </div>
+
+      <div class="box ok">
+        <strong>✔ Resultado esperado:</strong> en tu carpeta de Drive hay <strong>una sola</strong> Hoja de cálculo de
+        Google (sin etiqueta .XLSX), con las 6 pestañas visibles y tus datos básicos rellenados.
+      </div>
+
+      <details>
+        <summary>¿Algo salió mal? (Paso 2)</summary>
+        <div class="inner">
+          <ul>
+            <li><strong>No veo la opción "Guardar como hoja de cálculo de Google":</strong> asegúrate de que has abierto el archivo <code>.xlsx</code> desde Drive y de que tienes permiso de edición.</li>
+            <li><strong>Sigo viendo la etiqueta .XLSX:</strong> estás en el archivo original, no en la copia. Busca la copia en la misma carpeta.</li>
+            <li><strong>He borrado el archivo equivocado:</strong> ve a la Papelera de Drive y restáuralo.</li>
+            <li><strong>No aparecen las 6 pestañas abajo:</strong> puede que la conversión no se haya completado. Vuelve a intentarlo.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 2</h4>
+        <label class="chk"><input type="checkbox" data-k="p2a"><span>Creé una carpeta en Google Drive.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p2b"><span>Subí el Excel y lo convertí con <strong>Archivo &gt; Guardar como hoja de cálculo de Google</strong>.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p2c"><span>Eliminé el archivo <code>.xlsx</code> original de Drive (lo moví a la papelera).</span></label>
+        <label class="chk"><input type="checkbox" data-k="p2d"><span>Entendí las 6 pestañas y rellené mis datos básicos.</span></label>
+      </div>
+    </article>
+
+    <!-- ================= PASO 3 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">3</div>
+        <h3>Instalación del código en Google Apps Script</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> colocar el "cerebro" de tu agenda dentro de tu Hoja de cálculo.</p>
+
+      <div class="box tip">
+        <strong>🧠 ¿Qué es Apps Script?</strong> Imagina que tu Hoja de cálculo es una <strong>tienda</strong> y
+        Apps Script es el <strong>empleado robot</strong> que atiende en ella: recibe los pedidos de reserva, comprueba
+        la agenda y anota todo. Google te presta ese robot <strong>gratis</strong>. Tú solo tienes que
+        <strong>entregarle sus instrucciones</strong> (el código), y para eso basta con copiar y pegar.
+      </div>
+
+      <h4>3.1 · Abrir Apps Script desde tu Hoja de cálculo</h4>
+      <ol class="actions">
+        <li>Abre tu <strong>Hoja de cálculo de Google</strong> (la que convertiste en el Paso 2).</li>
+        <li>En el menú superior, haz clic en <strong>"Extensiones"</strong>.</li>
+        <li>Elige <strong>"Apps Script"</strong>.</li>
+        <li>Se abrirá una <strong>nueva pestaña</strong> con un editor de código. No te asustes: verás una pantalla con letras y símbolos, pero solo vamos a copiar y pegar.</li>
+      </ol>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> si en Extensiones no ves "Apps Script", comprueba que abriste una
+        <strong>Hoja de cálculo de Google</strong> y no el archivo <code>.xlsx</code> (revisa el Paso 2.3).
+      </div>
+
+      <h4>3.2 · Poner nombre al proyecto</h4>
+      <ol class="actions">
+        <li>Arriba a la izquierda verás un título como <strong>"Proyecto sin título"</strong>.</li>
+        <li>Haz clic sobre él, escribe <strong><code>Agenda de Reservas</code></strong> y pulsa <strong>"Cambiar nombre"</strong>.</li>
+      </ol>
+
+      <h4>3.3 · Reemplazar el código de <code>code.gs</code></h4>
+      <p>
+        En el panel izquierdo, bajo <strong>"Archivos"</strong>, verás un archivo llamado <strong><code>Código.gs</code></strong>
+        (o <code>code.gs</code>) con unas pocas líneas de ejemplo.
+      </p>
+      <ol class="actions">
+        <li>Haz clic sobre ese archivo para abrirlo.</li>
+        <li>Haz clic dentro del editor (en la zona de texto).</li>
+        <li>Presiona <code>Ctrl + A</code> (Windows) o <code>Cmd + A</code> (Mac) para <strong>seleccionar todo</strong>.</li>
+        <li>Presiona <code>Supr</code> o <code>Delete</code> para <strong>borrar</strong> el código predeterminado. El editor debe quedar vacío.</li>
+        <li>En tu computadora, abre el archivo <strong><code>code.gs</code></strong> que descargaste (clic derecho &gt; <em>Abrir con</em> &gt; Bloc de notas o TextEdit).</li>
+        <li>Selecciona todo su contenido (<code>Ctrl + A</code>) y cópialo (<code>Ctrl + C</code>).</li>
+        <li>Vuelve al editor de Apps Script y pega (<code>Ctrl + V</code>).</li>
+        <li>Pulsa el icono del <strong>disquete 💾</strong> (o <code>Ctrl + S</code>) para <strong>guardar</strong>.</li>
+      </ol>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> pega el <strong>contenido completo</strong>, sin dejar nada del código viejo y sin
+        cortar el final. Si faltan líneas, la agenda no funcionará.
+      </div>
+
+      <h4>3.4 · Crear los 4 archivos HTML secundarios</h4>
+      <p>Ahora vamos a crear <strong>cuatro archivos más</strong> dentro del proyecto. Son las "páginas" de tu agenda.
+        Los nombres deben quedar <strong>idénticos</strong> a los de la lista.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Orden</th><th>Nombre que debes escribir</th><th>Contenido que debes pegar (desde tu descarga)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td><code>index</code></td><td>contenido de <strong>index.html</strong></td></tr>
+            <tr><td>2</td><td><code>admin</code></td><td>contenido de <strong>admin.html</strong></td></tr>
+            <tr><td>3</td><td><code>estilobase</code></td><td>contenido de <strong>estilobase.html</strong></td></tr>
+            <tr><td>4</td><td><code>iconobase64</code></td><td>contenido de <strong>iconobase64.html</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p><strong>Pasos para cada archivo (repítelos cuatro veces):</strong></p>
+      <ol class="actions">
+        <li>En el panel izquierdo, junto a la palabra <strong>"Archivos"</strong>, haz clic en el botón <strong>"+"</strong>.</li>
+        <li>Elige <strong>"HTML"</strong>.</li>
+        <li>Aparecerá un cuadro para escribir el nombre. Escribe el nombre <strong>sin la terminación <code>.html</code></strong> (Apps Script la añade solo).</li>
+        <li>Pulsa <strong>Enter</strong>. Se creará el archivo con un poco de contenido de ejemplo.</li>
+        <li>Haz clic dentro del editor, presiona <code>Ctrl + A</code> y luego <code>Supr</code> para <strong>borrar el contenido de ejemplo</strong>.</li>
+        <li>Abre el archivo correspondiente de tu descarga, copia <strong>todo</strong> su contenido y <strong>pégalo</strong> en el editor.</li>
+        <li>Guarda con el icono <strong>💾</strong>.</li>
+      </ol>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> respeta mayúsculas, minúsculas y que <strong>no haya espacios</strong> en los nombres.
+        <code>estilobase</code> no es lo mismo que <code>Estilo Base</code>. Un nombre mal escrito es la causa número uno
+        de errores en este paso.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> el archivo <code>iconobase64.html</code> puede ser <strong>muy largo</strong>
+        (una sola línea gigante con letras y números: es el logo "traducido" a texto). Es normal. Solo asegúrate de
+        copiarlo y pegarlo completo con <code>Ctrl + A</code> / <code>Ctrl + C</code>.
+      </div>
+
+      <p>Al terminar, tu panel de archivos debe verse así:</p>
+      <pre><code>Archivos
+ ├── Código.gs   (o code.gs)
+ ├── index.html
+ ├── admin.html
+ ├── estilobase.html
+ └── iconobase64.html</code></pre>
+      <p class="mini"><em>(Aún falta el archivo <code>appsscript.json</code>, que está oculto. Lo mostramos en el siguiente punto.)</em></p>
+
+      <h4>3.5 · ⚠️ Paso crítico: el manifiesto oculto (<code>appsscript.json</code>)</h4>
+      <div class="box tip">
+        <strong>📜 ¿Qué es un "manifiesto"?</strong> Es como la <strong>ficha técnica</strong> o el
+        <strong>reglamento interno</strong> de tu proyecto: dice, por ejemplo, en qué <strong>zona horaria</strong> trabaja.
+        Google lo tiene escondido para no confundir a los principiantes; vamos a sacarlo a la vista.
+      </div>
+
+      <p><strong>Mostrar el archivo oculto:</strong></p>
+      <ol class="actions">
+        <li>En la columna izquierda del editor, haz clic en el icono del <strong>engranaje ⚙️</strong> llamado <strong>"Configuración del proyecto"</strong>.</li>
+        <li>Baja un poco hasta encontrar la casilla <strong>"Mostrar el archivo de manifiesto "appsscript.json" en el editor"</strong>.</li>
+        <li><strong>Márcala</strong> (debe aparecer un check azul ✔).</li>
+        <li>Vuelve al editor haciendo clic en el icono <strong><code>&lt; &gt;</code></strong> ("Editor") de la columna izquierda.</li>
+        <li>Ahora verás un archivo nuevo en la lista: <strong><code>appsscript.json</code></strong>.</li>
+      </ol>
+
+      <p><strong>Reemplazar su contenido para fijar la zona horaria:</strong></p>
+      <ol class="actions">
+        <li>Haz clic en <strong><code>appsscript.json</code></strong> para abrirlo.</li>
+        <li>Presiona <code>Ctrl + A</code> para seleccionar todo y <code>Supr</code> para borrar.</li>
+        <li>Abre en tu computadora el archivo <strong><code>appsscript.json</code></strong> de tu descarga, copia <strong>todo</strong> su contenido y pégalo en el editor.</li>
+        <li><strong>Revisa la zona horaria.</strong> Busca la línea que dice <code>"timeZone"</code>. Debe tener la zona de <strong>tu ciudad</strong>.</li>
+        <li>Guarda con el icono <strong>💾</strong>.</li>
+      </ol>
+
+      <p>Así es, a grandes rasgos, la línea de la zona horaria (el ejemplo usa Ciudad de México;
+        <strong>el archivo de tu descarga es el que manda</strong>):</p>
+
+      <div class="copy-row">
+        <code id="tzExample">"timeZone": "America/Mexico_City"</code>
+        <button class="copyBtn" data-copy="tzExample">COPIAR</button>
+      </div>
+
+      <p>Si tu ciudad es otra, cambia <strong>solo lo que está entre comillas</strong> por la zona que corresponda:</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>País / ciudad</th><th>Valor para <code>timeZone</code></th></tr>
+          </thead>
+          <tbody>
+            <tr><td>México (Ciudad de México)</td><td><code>America/Mexico_City</code></td></tr>
+            <tr><td>Colombia (Bogotá)</td><td><code>America/Bogota</code></td></tr>
+            <tr><td>Perú (Lima)</td><td><code>America/Lima</code></td></tr>
+            <tr><td>Chile (Santiago)</td><td><code>America/Santiago</code></td></tr>
+            <tr><td>Argentina (Buenos Aires)</td><td><code>America/Argentina/Buenos_Aires</code></td></tr>
+            <tr><td>Ecuador (Quito)</td><td><code>America/Guayaquil</code></td></tr>
+            <tr><td>Venezuela (Caracas)</td><td><code>America/Caracas</code></td></tr>
+            <tr><td>Uruguay (Montevideo)</td><td><code>America/Montevideo</code></td></tr>
+            <tr><td>España (Madrid)</td><td><code>Europe/Madrid</code></td></tr>
+            <tr><td>Estados Unidos (Miami / Nueva York)</td><td><code>America/New_York</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> si la zona horaria es incorrecta, <strong>las citas aparecerán con horas desfasadas</strong>
+        (por ejemplo, una cita a las 10:00 se vería a las 15:00). Es el error más "misterioso" de todos, así que revísalo bien ahora.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> los signos como <code>{</code>, <code>}</code>, <code>"</code> y <code>,</code>
+        del manifiesto son delicados. Si pegas todo el contenido tal cual viene en el archivo descargado, no tendrás problema.
+      </div>
+
+      <h4>3.6 · ⚠️ Paso crítico de seguridad: crear el PIN del panel de administración</h4>
+      <div class="box tip">
+        <strong>🔐 ¿Para qué sirve el PIN?</strong> Es la <strong>llave de tu oficina</strong>. Tus clientes ven el
+        "mostrador" (la página de reservas), pero <strong>solo quien tenga el PIN</strong> puede entrar a la oficina
+        (el panel de administración) a ver y gestionar todas las citas.
+      </div>
+      <ol class="actions">
+        <li>Con el proyecto abierto, haz clic en el <strong>engranaje ⚙️ "Configuración del proyecto"</strong> (columna izquierda).</li>
+        <li>Baja hasta la sección <strong>"Propiedades de la secuencia de comandos"</strong> (en algunas pantallas se llama <strong>"Propiedades del script"</strong>).</li>
+        <li>Haz clic en <strong>"Añadir propiedad de la secuencia de comandos"</strong> (o <strong>"Añadir propiedad del script"</strong>).</li>
+        <li>En el campo <strong>"Propiedad"</strong>, escribe exactamente: <code>admin_pin</code></li>
+        <li>En el campo <strong>"Valor"</strong>, escribe el <strong>número que quieras usar como PIN</strong>.</li>
+        <li>Haz clic en <strong>"Guardar propiedades de la secuencia de comandos"</strong>.</li>
+      </ol>
+
+      <div class="copy-row">
+        <code id="pinName">admin_pin</code>
+        <button class="copyBtn" data-copy="pinName">COPIAR</button>
+      </div>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> el nombre debe ser <strong>exactamente</strong> <code>admin_pin</code>:
+        todo en minúsculas, con <strong>guion bajo</strong> (<code>_</code>) y <strong>sin espacios</strong> antes ni después.
+        Si escribes <code>Admin PIN</code>, <code>admin-pin</code> o <code>adminpin</code>, el sistema
+        <strong>no reconocerá tu PIN</strong> y no podrás entrar al panel.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> <strong>no uses <code>1234</code></strong> en tu agenda real; es el primer PIN
+        que probaría cualquiera. En el Paso 7 te damos ideas para elegir uno seguro.
+      </div>
+
+      <div class="box ok">
+        <strong>✔ Resultado esperado:</strong> tu proyecto tiene <code>Código.gs</code> + 4 archivos HTML +
+        <code>appsscript.json</code> con tu zona horaria correcta, y una propiedad de script llamada
+        <code>admin_pin</code> con tu número secreto.
+      </div>
+
+      <details>
+        <summary>¿Algo salió mal? (Paso 3)</summary>
+        <div class="inner">
+          <ul>
+            <li><strong>No veo "Apps Script" en Extensiones:</strong> estás en un archivo <code>.xlsx</code>. Vuelve al Paso 2.3.</li>
+            <li><strong>Aparece un error en rojo en el editor:</strong> probablemente se pegó el código incompleto. Selecciona todo y vuelve a pegarlo entero.</li>
+            <li><strong>No aparece <code>appsscript.json</code>:</strong> no has marcado la casilla en Configuración del proyecto.</li>
+            <li><strong>El PIN no funciona luego:</strong> revisa que el nombre sea exactamente <code>admin_pin</code>, sin espacios.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 3</h4>
+        <label class="chk"><input type="checkbox" data-k="p3a"><span>Abrí Apps Script desde <strong>Extensiones &gt; Apps Script</strong>.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p3b"><span>Reemplacé el contenido de <code>code.gs</code> por el código descargado.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p3c"><span>Creé los 4 archivos HTML: <code>index</code>, <code>admin</code>, <code>estilobase</code>, <code>iconobase64</code>, con su contenido pegado.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p3d"><span>Mostré el manifiesto, reemplacé <code>appsscript.json</code> y verifiqué mi zona horaria.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p3e"><span>Creé la propiedad <code>admin_pin</code> con mi número secreto.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p3f"><span>Guardé todo con el icono 💾.</span></label>
+      </div>
+    </article>
+
+    <!-- ================= PASO 4 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">4</div>
+        <h3>Publicación e implementación de la aplicación web</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> "abrir las puertas de tu local" para que tus clientes puedan visitar la agenda desde internet.</p>
+
+      <div class="box tip">
+        <strong>🏪 Analogía:</strong> hasta ahora has estado <strong>decorando y organizando la tienda con la puerta cerrada</strong>.
+        Implementar es <strong>colgar el cartel de "Abierto"</strong> y obtener la dirección exacta (la URL) para que la gente llegue.
+      </div>
+
+      <h4>4.1 · Crear la implementación</h4>
+      <ol class="actions">
+        <li>En la parte superior derecha del editor de Apps Script, haz clic en el <strong>botón azul "Implementar"</strong>.</li>
+        <li>Elige <strong>"Nueva implementación"</strong>.</li>
+        <li>En la ventana que aparece, junto a "Seleccionar tipo", haz clic en el <strong>icono del engranaje ⚙️</strong>.</li>
+        <li>Elige <strong>"Aplicación web"</strong>.</li>
+      </ol>
+
+      <h4>4.2 · Configuración exacta</h4>
+      <p>Rellena <strong>exactamente</strong> así:</p>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Campo</th><th>Qué debes poner</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Descripción</strong></td><td><code>Agenda de reservas v1</code> (o lo que quieras; es solo una nota para ti)</td></tr>
+            <tr><td><strong>Tipo de enlace / Tipo</strong></td><td><strong>Aplicación web</strong></td></tr>
+            <tr><td><strong>Ejecutar como</strong></td><td><strong>Yo</strong> (tu correo electrónico)</td></tr>
+            <tr><td><strong>Quién tiene acceso</strong></td><td><strong>Cualquier persona</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> si dejas "Quién tiene acceso" en <em>"Solo yo"</em>,
+        <strong>tus clientes no podrán entrar</strong> y verán un error. Debe ser <strong>"Cualquier persona"</strong>.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> "Ejecutar como: <strong>Yo</strong>" significa que la agenda trabaja con
+        <strong>tu</strong> permiso para guardar las reservas en <strong>tu</strong> hoja. Tus clientes
+        <strong>no</strong> necesitan cuenta de Google ni iniciar sesión.
+      </div>
+
+      <ol class="actions">
+        <li>Haz clic en <strong>"Implementar"</strong>.</li>
+      </ol>
+
+      <h4>4.3 · La pantalla de permisos de seguridad de Google (¡con calma!)</h4>
+      <p>La primera vez, Google te pedirá autorización. <strong>Es normal.</strong> Verás varias pantallas que pueden
+        parecer alarmantes, pero tienen una explicación sencilla.</p>
+
+      <div class="box tip">
+        <strong>🛡️ ¿Por qué aparece esto?</strong> Imagina que contratas a un <strong>empleado nuevo</strong> (tu agenda)
+        y le das <strong>llaves de tu local</strong> (acceso a tu hoja de cálculo). Google, como un portero muy prudente,
+        te pregunta: <em>"¿Estás seguro de que quieres darle estas llaves?"</em> Como <strong>tú mismo creaste ese empleado</strong>
+        copiando el código, puedes decir que sí con tranquilidad.
+      </div>
+
+      <ol class="actions">
+        <li>Haz clic en <strong>"Autorizar acceso"</strong>.</li>
+        <li>Elige <strong>tu cuenta de Google</strong> (la del negocio).</li>
+        <li>Aparecerá un aviso: <strong>"Google no ha verificado esta aplicación"</strong>. <em>Es normal</em>: significa que el programa lo hiciste tú y no ha pasado por la revisión formal de Google.</li>
+        <li>Haz clic en <strong>"Configuración avanzada"</strong> (o "Avanzado"), un enlace pequeño en la parte inferior izquierda.</li>
+        <li>Haz clic en <strong>"Ir a Agenda de Reservas (no seguro)"</strong>. <em>No es peligroso</em>: es tu propio proyecto.</li>
+        <li>Lee la lista de permisos. Verás que pide, por ejemplo, <strong>ver y editar tus hojas de cálculo</strong> (para guardar las reservas).</li>
+        <li>Haz clic en <strong>"Permitir"</strong> (o "Allow").</li>
+      </ol>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> estos permisos se otorgan <strong>a tu propio proyecto</strong>, no a una persona
+        ni empresa externa. Solo tú, como dueño de la cuenta, controlas lo que pasa con tus datos.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> si la ventana se cierra o se queda en blanco, no pasa nada. Cierra, vuelve a
+        pulsar <strong>Implementar &gt; Nueva implementación</strong> y repite el proceso.
+      </div>
+
+      <h4>4.4 · Copiar la URL de tu aplicación web</h4>
+      <ol class="actions">
+        <li>Cuando termine, verás un mensaje de <strong>"Implementación actualizada"</strong> o <strong>"Nueva implementación"</strong>.</li>
+        <li>Busca el recuadro <strong>"URL de la aplicación web"</strong>. Será una dirección larga que empieza por <code>https://script.google.com/macros/s/...</code> y termina en <code>/exec</code>.</li>
+        <li>Haz clic en el botón <strong>"Copiar"</strong>.</li>
+        <li><strong>Pega esa dirección en un lugar seguro</strong>: el Bloc de notas, un mensaje a ti mismo en WhatsApp, etc. La necesitarás varias veces.</li>
+      </ol>
+
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> la URL válida <strong>termina en <code>/exec</code></strong>. Si ves una que acaba
+        en <code>/dev</code>, es solo una versión de pruebas que funciona únicamente para ti. Usa siempre la de <code>/exec</code>.
+      </div>
+
+      <ol class="actions">
+        <li>Haz clic en <strong>"Listo"</strong>.</li>
+      </ol>
+
+      <div class="box ok">
+        <strong>✔ Resultado esperado:</strong> tienes una URL larga terminada en <code>/exec</code>, guardada en un lugar
+        seguro, y al abrirla en una pestaña nueva se ve tu página de reservas.
+      </div>
+
+      <details>
+        <summary>¿Algo salió mal? (Paso 4)</summary>
+        <div class="inner">
+          <ul>
+            <li><strong>Mis clientes ven un error de permisos:</strong> "Quién tiene acceso" no está en "Cualquier persona". Edita la implementación.</li>
+            <li><strong>La URL acaba en <code>/dev</code>:</strong> esa no sirve para el público. Busca la que acaba en <code>/exec</code>.</li>
+            <li><strong>La pantalla de permisos se queda en blanco:</strong> cierra y repite la implementación.</li>
+            <li><strong>No encuentro la URL después:</strong> ve a <strong>Implementar &gt; Administrar implementaciones</strong> y ahí la verás.</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 4</h4>
+        <label class="chk"><input type="checkbox" data-k="p4a"><span>Creé una <strong>Nueva implementación</strong> de tipo <strong>Aplicación web</strong>.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p4b"><span>Puse <strong>Ejecutar como: Yo</strong> y <strong>Acceso: Cualquier persona</strong>.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p4c"><span>Autorización completada (Configuración avanzada &gt; Ir a… &gt; Permitir).</span></label>
+        <label class="chk"><input type="checkbox" data-k="p4d"><span>Copié la URL que termina en <code>/exec</code> y la guardé.</span></label>
+      </div>
+    </article>
+
+    <!-- ================= PASO 5 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">5</div>
+        <h3>Prueba de reservas y uso del panel de administración</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> comprobar que todo funciona, <strong>antes</strong> de dárselo a tus clientes.</p>
+
+      <h4>5.1 · Hacer una reserva de prueba (como si fueras un cliente)</h4>
+      <ol class="actions">
+        <li>Abre una <strong>pestaña nueva</strong> del navegador.</li>
+        <li>Pega la <strong>URL de tu aplicación web</strong> (la que termina en <code>/exec</code>) y pulsa <strong>Enter</strong>.</li>
+        <li>Verás tu <strong>página de reservas</strong> con el nombre de tu negocio.</li>
+        <li>Elige un <strong>servicio</strong>.</li>
+        <li>Elige un <strong>especialista</strong> (si aplica).</li>
+        <li>Elige un <strong>día</strong> disponible y una <strong>hora</strong>.</li>
+        <li>Escribe un <strong>nombre</strong> de prueba y un <strong>teléfono</strong>.</li>
+        <li>Confirma la reserva.</li>
+        <li>Debe aparecer un mensaje de <strong>reserva registrada</strong>.</li>
+        <li>Vuelve a tu <strong>Hoja de cálculo</strong> y abre la pestaña <code>Reservas</code>: tu cita de prueba debe estar en una <strong>fila nueva</strong>. 🎉</li>
+      </ol>
+
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> la primera carga puede tardar unos segundos. Es normal en la primera visita del día.
+      </div>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> si algo no carga, revisa la sección de <strong>Preguntas frecuentes</strong>
+        (pestaña ERRORES) donde están los problemas más comunes y su solución.
+      </div>
+
+      <h4>5.2 · Entrar al Panel de administración</h4>
+      <p>El panel es <strong>tu oficina privada</strong>. Para entrar:</p>
+      <ol class="actions">
+        <li>Toma la <strong>URL de tu aplicación web</strong> (la de <code>/exec</code>).</li>
+        <li>Añade <strong>al final</strong> de la dirección: <code>?page=admin</code></li>
+        <li>Pulsa <strong>Enter</strong>.</li>
+        <li>Se abrirá una pantalla que pide el <strong>PIN</strong>. Escribe el número que guardaste como <code>admin_pin</code> en el Paso 3.6.</li>
+        <li>Pulsa <strong>"Entrar"</strong>.</li>
+      </ol>
+
+      <div class="copy-row">
+        <code id="adminSuffix">?page=admin</code>
+        <button class="copyBtn" data-copy="adminSuffix">COPIAR</button>
+      </div>
+
+      <p>Ejemplo (solo ilustrativo):</p>
+      <pre><code>https://script.google.com/macros/s/XXXXXXXXXXXX/exec?page=admin</code></pre>
+
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> si el sistema de tu paquete usa otra forma de acceso (por ejemplo
+        <code>?admin=1</code> o <code>?view=admin</code>), tu archivo <code>code.gs</code> indica la correcta.
+        <strong>Guarda el enlace del panel en los marcadores</strong> de tu navegador para llegar con un clic.
+      </div>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> <strong>nunca compartas el enlace del panel junto con el PIN</strong> en un mismo
+        mensaje y <strong>nunca lo publiques</strong> en tus redes. A tus clientes solo se les comparte el enlace normal de reservas.
+      </div>
+
+      <h4>5.3 · Confirmar o cancelar citas</h4>
+      <p>Dentro del panel verás la <strong>lista de reservas</strong>. Para cada cita:</p>
+      <ol class="actions">
+        <li><strong>Confirmar:</strong> busca la cita y pulsa <strong>"Confirmar"</strong>. Su estado cambiará a <em>confirmada</em>.</li>
+        <li><strong>Cancelar:</strong> si el cliente avisa que no puede venir, pulsa <strong>"Cancelar"</strong>. Ese horario <strong>vuelve a quedar libre</strong> para otras personas.</li>
+      </ol>
+
+      <h4>5.4 · Enviar la confirmación automática por WhatsApp</h4>
+      <div class="box tip">
+        <strong>📲 ¿Cómo funciona?</strong> Al confirmar una cita, el panel te muestra un botón de <strong>WhatsApp</strong>.
+        Al pulsarlo, se abre WhatsApp con el <strong>mensaje ya escrito</strong> (nombre del cliente, servicio, día y hora)
+        y dirigido a su número. Tú solo tienes que pulsar <strong>Enviar</strong>.
+      </div>
+      <ol class="actions">
+        <li>En la cita que acabas de confirmar, pulsa el botón de <strong>WhatsApp</strong>.</li>
+        <li>Se abrirá <strong>WhatsApp Web</strong> o la <strong>aplicación</strong> con el mensaje preparado.</li>
+        <li>Revisa el texto y pulsa <strong>Enviar</strong>.</li>
+      </ol>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> el texto del mensaje lo puedes personalizar en la pestaña <code>Config</code>
+        de tu hoja (mensajes automáticos). Cámbialo a tu estilo: más cercano, más formal, con emojis…
+      </div>
+
+      <h4>5.5 · Borrar la reserva de prueba</h4>
+      <ol class="actions">
+        <li>Cancela la cita de prueba desde el panel.</li>
+        <li>Si quieres dejar el historial limpio, puedes eliminar esa fila de la pestaña <code>Reservas</code> de tu hoja.</li>
+      </ol>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> haz esa limpieza <strong>antes</strong> de empezar a recibir clientes reales.
+      </div>
+
+      <div class="box ok">
+        <strong>✔ Resultado esperado:</strong> la reserva de prueba aparece en la hoja, entras al panel con el PIN,
+        confirmas y cancelas sin problemas, y el botón de WhatsApp abre la conversación con el mensaje preparado.
+      </div>
+
+      <details>
+        <summary>¿Algo salió mal? (Paso 5)</summary>
+        <div class="inner">
+          <ul>
+            <li><strong>La reserva no aparece en la hoja:</strong> comprueba que estás mirando la Hoja de cálculo correcta (no una copia vieja) y la pestaña <code>Reservas</code>.</li>
+            <li><strong>El panel no me deja entrar:</strong> revisa que la propiedad se llame exactamente <code>admin_pin</code>.</li>
+            <li><strong>El botón de WhatsApp no hace nada:</strong> revisa el teléfono en <code>Config</code> (solo números, con código de país).</li>
+          </ul>
+        </div>
+      </details>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 5</h4>
+        <label class="chk"><input type="checkbox" data-k="p5a"><span>Hice una reserva de prueba y apareció en la pestaña <code>Reservas</code>.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p5b"><span>Entré al panel con el PIN.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p5c"><span>Probé a confirmar y a cancelar una cita.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p5d"><span>Probé el botón de WhatsApp.</span></label>
+      </div>
+    </article>
+
+    <!-- ================= PASO 6 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">6</div>
+        <h3>(Opcional) Crear una URL profesional gratis con Netlify</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> cambiar esa dirección larga y rara de Google por algo corto y bonito, como <code>miagenda.netlify.app</code>.</p>
+
+      <div class="box tip">
+        <strong>🪪 Analogía:</strong> la URL de Google es como dar tu dirección diciendo
+        <em>"Calle 45, edificio B, piso 3, puerta 12, tercera a la izquierda"</em>. Con Netlify es como decir simplemente
+        <strong>"Estoy en Plaza Mayor"</strong>. Es el mismo negocio, pero mucho más fácil de recordar y compartir en tu Instagram o WhatsApp.
+      </div>
+      <div class="box tip">
+        <strong>🌐 ¿Qué es Netlify?</strong> Es un servicio gratuito que <strong>aloja páginas web</strong>, como un
+        <strong>local de exposición</strong> que te presta un espacio donde colocar una pequeña vitrina. Esa vitrina
+        simplemente <strong>te lleva a tu agenda</strong> y le da una dirección elegante.
+      </div>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> este paso es <strong>opcional</strong>. Tu agenda ya funciona con la URL de Google.
+        Si prefieres, puedes saltarlo y volver cuando quieras.
+      </div>
+
+      <h4>6.1 · Crear una cuenta gratuita en Netlify</h4>
+      <ol class="actions">
+        <li>Entra a <strong>netlify.com</strong>.</li>
+        <li>Haz clic en <strong>"Sign up"</strong> (Registrarse).</li>
+        <li>Elige una forma de registro: lo más sencillo es <strong>"Continue with Google"</strong> o con tu correo electrónico.</li>
+        <li>Sigue las pantallas y confirma tu correo si te lo piden.</li>
+        <li>Cuando te pregunten qué plan quieres, elige el <strong>plan gratuito (Free)</strong>.</li>
+      </ol>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> no hace falta tarjeta de crédito para el plan gratuito. Si algún paso te la pide,
+        revisa que no estés eligiendo un plan de pago.
+      </div>
+
+      <h4>6.2 · Reemplazar la URL de Apps Script en los archivos de Netlify</h4>
+      <p>Dentro de la carpeta <strong>Netlify</strong> de tu descarga hay uno o más archivos <code>index.html</code>.
+        Contienen una <strong>dirección de ejemplo</strong> que debes cambiar por la <strong>tuya</strong> (la de <code>/exec</code> del Paso 4.4).</p>
+      <ol class="actions">
+        <li>En tu computadora, abre la <strong>carpeta Netlify</strong> que descomprimiste.</li>
+        <li>Haz <strong>clic derecho</strong> sobre el archivo <code>index.html</code> y elige <strong>"Abrir con" &gt; "Bloc de notas"</strong> (Windows) o <strong>"TextEdit"</strong> (Mac).</li>
+        <li>Busca la dirección de ejemplo con <code>Ctrl + F</code> (Windows) o <code>Cmd + F</code> (Mac) y escribe <code>script.google.com</code>, o busca el texto marcado como <code>PEGA_AQUI_TU_URL</code> (según indique tu archivo).</li>
+        <li><strong>Selecciona solo la dirección antigua</strong> (sin borrar las comillas que la rodean) y <strong>pega la tuya</strong> encima.</li>
+        <li>Guarda el archivo: <code>Ctrl + S</code> (Windows) o <code>Cmd + S</code> (Mac).</li>
+        <li><strong>Si hay más de un <code>index.html</code></strong> (por ejemplo, uno en una subcarpeta), repite el cambio en cada uno de ellos.</li>
+      </ol>
+
+      <div class="box tip">
+        <strong>💡 En Mac:</strong> si TextEdit muestra el archivo "como página web", ve a
+        <strong>TextEdit &gt; Ajustes &gt; Abrir y guardar</strong> y activa
+        <strong>"Mostrar archivos HTML como código HTML"</strong>.
+      </div>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> deja intactas las comillas <code>"</code> y el resto del texto. Cambia
+        <strong>solo</strong> la dirección. Una comilla borrada puede romper la página.
+      </div>
+
+      <h4>6.3 · Subir la carpeta a Netlify</h4>
+      <ol class="actions">
+        <li>Entra a tu panel de Netlify (<strong>app.netlify.com</strong>).</li>
+        <li>Busca la opción <strong>"Add new site"</strong> (Añadir nuevo sitio) y elige <strong>"Deploy manually"</strong> (Despliegue manual).</li>
+        <li><strong>Arrastra la carpeta Netlify completa</strong> desde tu computadora hasta ese recuadro y suéltala.</li>
+        <li>Espera unos segundos. Netlify te mostrará un <strong>enlace con un nombre aleatorio</strong>, como <code>lively-sunflower-1234.netlify.app</code>.</li>
+        <li>Haz clic en ese enlace para comprobar que se abre <strong>tu agenda</strong>.</li>
+      </ol>
+
+      <h4>6.4 · Elegir tu nombre personalizado</h4>
+      <ol class="actions">
+        <li>En el panel de tu sitio, ve a <strong>"Site configuration"</strong> (o <strong>"Site settings"</strong>).</li>
+        <li>Busca <strong>"Change site name"</strong> (Cambiar nombre del sitio).</li>
+        <li>Escribe el nombre que quieras, por ejemplo: <strong><code>barberia-lopez</code></strong> o <strong><code>clinica-sonrisa</code></strong>. Debe ser corto, <strong>en minúsculas, sin espacios ni tildes</strong> (usa guiones si los necesitas).</li>
+        <li>Pulsa <strong>"Save"</strong> (Guardar).</li>
+        <li>Tu dirección quedará así: <strong><code>https://barberia-lopez.netlify.app</code></strong></li>
+      </ol>
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> si el nombre que quieres ya está ocupado, prueba a añadir tu ciudad o
+        una palabra extra (<code>barberia-lopez-valencia</code>).
+      </div>
+
+      <h4>6.5 · Compártela donde quieras</h4>
+      <ul>
+        <li>📸 Pon el enlace en la <strong>biografía de Instagram</strong>.</li>
+        <li>💬 Añádelo como enlace en tu <strong>WhatsApp Business</strong>.</li>
+        <li>🖨️ Imprímelo en una <strong>tarjeta</strong> o un <strong>cartel con código QR</strong> en tu local.</li>
+        <li>📍 Agrégalo a tu ficha de <strong>Google Maps</strong>.</li>
+      </ul>
+
+      <div class="box ok">
+        <strong>✔ Resultado esperado:</strong> tienes un enlace corto tipo <code>https://tu-negocio.netlify.app</code>
+        que abre tu agenda de reservas.
+      </div>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 6</h4>
+        <label class="chk"><input type="checkbox" data-k="p6a"><span>Creé mi cuenta gratuita en Netlify.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p6b"><span>Reemplacé la URL en el/los <code>index.html</code> de la carpeta Netlify.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p6c"><span>Arrastré la carpeta a Netlify y el enlace abre mi agenda.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p6d"><span>Cambié el nombre del sitio por uno fácil de recordar.</span></label>
+      </div>
+    </article>
+
+    <!-- ================= PASO 7 ================= -->
+    <article class="step-card">
+      <div class="step-head">
+        <div class="step-num">7</div>
+        <h3>Preguntas frecuentes y consejos útiles</h3>
+      </div>
+
+      <p class="goal">🎯 <strong>Objetivo:</strong> saber mantener tu agenda en el día a día y resolver los problemas más habituales.</p>
+
+      <h4>7.1 · Lo mejor de este sistema: todo se actualiza solo</h4>
+      <p>La gran ventaja de esta agenda es que <strong>nunca tendrás que volver a tocar código</strong> para el día a día.
+        Todo se controla desde tu <strong>Hoja de cálculo</strong>, como si fuera tu cuaderno de gestión.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Si quieres…</th><th>Haz esto en tu hoja de cálculo</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Cambiar un precio</td><td>Pestaña <code>Servicios</code>: edita el precio y listo.</td></tr>
+            <tr><td>Añadir un servicio nuevo</td><td>Pestaña <code>Servicios</code>: añade una fila nueva.</td></tr>
+            <tr><td>Cambiar la duración de un servicio</td><td>Pestaña <code>Servicios</code>: edita los minutos.</td></tr>
+            <tr><td>Cambiar tus horarios de atención</td><td>Pestaña <code>Horarios</code>: modifica los bloques.</td></tr>
+            <tr><td>Añadir un nuevo especialista</td><td>Pestaña <code>Especialistas</code>: añade una fila.</td></tr>
+            <tr><td>Cerrar por vacaciones o festivo</td><td>Pestaña <code>Bloqueos</code>: anota esas fechas.</td></tr>
+            <tr><td>Cambiar nombre, colores o mensajes</td><td>Pestaña <code>Config</code>.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="box tip">
+        <strong>💡 Consejo rápido:</strong> los cambios se reflejan en la agenda <strong>en cuanto recargas la página</strong>
+        (o en pocos segundos). No hace falta volver a implementar ni tocar Apps Script.
+      </div>
+      <div class="box warn">
+        <strong>⚠️ Importante:</strong> <strong>solo</strong> vuelve a Apps Script y haz una <strong>nueva implementación</strong>
+        si <strong>modificas el código</strong> (los archivos <code>.gs</code> o <code>.html</code>). Para cambios de datos
+        en la hoja, <strong>nunca</strong> es necesario.
+      </div>
+
+      <h4>7.2 · Consejos de seguridad para tu PIN</h4>
+      <ol class="actions">
+        <li><strong>No uses PIN fáciles:</strong> evita <code>1234</code>, <code>0000</code>, <code>1111</code>, tu año de nacimiento o el teléfono del negocio.</li>
+        <li><strong>Cámbialo si alguien se va:</strong> si un empleado que conocía el PIN deja el negocio, cámbialo en <strong>Configuración del proyecto &gt; Propiedades del script &gt; <code>admin_pin</code></strong>.</li>
+        <li><strong>No lo escribas en lugares visibles:</strong> nada de notas adhesivas pegadas al monitor o mensajes en grupos de WhatsApp.</li>
+        <li><strong>Comparte el enlace de administración solo con quien lo necesite.</strong> Los clientes solo necesitan el enlace normal de reservas.</li>
+        <li><strong>Protege tu cuenta de Google:</strong> activa la <strong>verificación en dos pasos</strong>. Es lo más importante para proteger tus datos.</li>
+        <li><strong>Haz copias de seguridad:</strong> de vez en cuando entra a tu hoja y elige <strong>Archivo &gt; Hacer una copia</strong>.</li>
+      </ol>
+
+      <div class="box ok">
+        <strong>🎉 ¡Lo lograste!</strong> Si llegaste hasta aquí, ya tienes una <strong>agenda de reservas profesional,
+        gratuita y propia</strong>. Sin pagar suscripciones, sin depender de nadie y con todo bajo tu control.
+      </div>
+
+      <div class="checklist">
+        <h4>✅ Lista de comprobación del Paso 7</h4>
+        <label class="chk"><input type="checkbox" data-k="p7a"><span>Entendí que los cambios de datos se hacen en la hoja, no en el código.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p7b"><span>Elegí un PIN seguro y distinto de <code>1234</code>.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p7c"><span>Activé la verificación en dos pasos en mi cuenta de Google.</span></label>
+        <label class="chk"><input type="checkbox" data-k="p7d"><span>Hice una copia de seguridad de mi hoja de cálculo.</span></label>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: PRÁCTICA
+       ============================================================ -->
+  <section class="panel" id="panel-practica" data-print-title="PRÁCTICA">
+
+    <div class="card">
+      <h2>🏋️ Ejercicios prácticos</h2>
+      <p>
+        Estos ejercicios no requieren instalar nada nuevo: se resuelven con lo que ya sabes del tutorial.
+        Intenta responder antes de abrir la solución.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 1 · ¿Quién hace qué?</h3>
+      <p>Relaciona cada archivo del paquete con su función.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Archivo</th><th>Tu respuesta</th></tr></thead>
+          <tbody>
+            <tr><td><code>code.gs</code></td><td>?</td></tr>
+            <tr><td><code>index.html</code></td><td>?</td></tr>
+            <tr><td><code>admin.html</code></td><td>?</td></tr>
+            <tr><td><code>appsscript.json</code></td><td>?</td></tr>
+            <tr><td><code>estilobase.html</code></td><td>?</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <ul>
+            <li><code>code.gs</code> → <strong>El cerebro</strong>: el programa principal que piensa y guarda las reservas.</li>
+            <li><code>index.html</code> → <strong>El mostrador</strong>: la página que ven los clientes para reservar.</li>
+            <li><code>admin.html</code> → <strong>La oficina</strong>: la página privada para que tú gestiones las citas.</li>
+            <li><code>appsscript.json</code> → <strong>El reloj de pared</strong>: los ajustes del proyecto, como la zona horaria.</li>
+            <li><code>estilobase.html</code> → <strong>La decoración</strong>: los colores y el diseño de las páginas.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 2 · El teléfono de WhatsApp</h3>
+      <p>Escribe en la pestaña <code>Config</code> el teléfono de un negocio de Valencia (España) cuyo número es 600 12 34 56. ¿Cuál de estas formas es la correcta?</p>
+      <ul>
+        <li>A) <code>+34 600 12 34 56</code></li>
+        <li>B) <code>34600123456</code></li>
+        <li>C) <code>600-12-34-56</code></li>
+        <li>D) <code>34 600 123 456</code></li>
+      </ul>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <p><strong>Correcta: B</strong> → <code>34600123456</code></p>
+          <p>
+            El teléfono debe escribirse <strong>solo con números</strong>, empezando por el <strong>código del país</strong>
+            (34 para España) y <strong>sin</strong> el signo <code>+</code>, sin espacios, sin guiones y sin paréntesis.
+          </p>
+          <p><strong>Por qué fallan las demás:</strong></p>
+          <ul>
+            <li>A) El <code>+</code> y los espacios rompen el enlace de WhatsApp.</li>
+            <li>C) Los guiones también rompen el enlace.</li>
+            <li>D) Los espacios rompen el enlace.</li>
+          </ul>
+          <p><strong>Error frecuente:</strong> un teléfono mal escrito es la causa más común de que el botón de WhatsApp no funcione.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 3 · Tu zona horaria</h3>
+      <p>Vives en Lima (Perú). ¿Qué valor debes poner en la línea <code>"timeZone"</code> de <code>appsscript.json</code>?</p>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <p><strong>Solución:</strong> <code>"timeZone": "America/Lima"</code></p>
+          <p>
+            La tabla del Paso 3.5 indica que para Perú (Lima) el valor es <code>America/Lima</code>.
+            <strong>Ojo:</strong> cambia solo lo que está entre comillas y no toques las comillas ni las comas.
+          </p>
+          <p><strong>¿Qué pasaría si te equivocas?</strong> Las citas aparecerían con horas desfasadas:
+            una cita a las 10:00 se vería, por ejemplo, a las 15:00. Es el error más "misterioso" de todos.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 4 · Un PIN seguro</h3>
+      <p>¿Cuál de estos PIN elegirías para tu panel? Justifica tu respuesta.</p>
+      <ul>
+        <li>A) <code>1234</code></li>
+        <li>B) <code>0000</code></li>
+        <li>C) <code>1985</code> (tu año de nacimiento)</li>
+        <li>D) <code>7391</code></li>
+      </ul>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <p><strong>Correcta: D</strong> → <code>7391</code></p>
+          <p>Es un número sin patrón evidente y sin relación con datos que cualquiera pueda deducir de ti.</p>
+          <p><strong>Por qué fallan las demás:</strong></p>
+          <ul>
+            <li>A) <code>1234</code> es el primer PIN que probaría cualquiera.</li>
+            <li>B) <code>0000</code> es igual de obvio.</li>
+            <li>C) Tu año de nacimiento es un dato público en muchas redes sociales.</li>
+          </ul>
+          <p><strong>Extra:</strong> tampoco uses el teléfono del negocio, que está publicado en tu página de reservas.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 5 · ¿Dónde se hace cada cambio?</h3>
+      <p>Indica si cada cambio requiere tocar la Hoja de cálculo o el código de Apps Script.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Cambio</th><th>¿Hoja o código?</th></tr></thead>
+          <tbody>
+            <tr><td>Subir el precio de un corte de pelo</td><td>?</td></tr>
+            <tr><td>Añadir un servicio nuevo</td><td>?</td></tr>
+            <tr><td>Cambiar el color de los botones</td><td>?</td></tr>
+            <tr><td>Cerrar la semana de vacaciones</td><td>?</td></tr>
+            <tr><td>Cambiar el mensaje de confirmación</td><td>?</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <ul>
+            <li>Subir el precio → <strong>Hoja</strong>, pestaña <code>Servicios</code>.</li>
+            <li>Añadir un servicio → <strong>Hoja</strong>, pestaña <code>Servicios</code> (fila nueva).</li>
+            <li>Cambiar el color de los botones → <strong>Código</strong>, en <code>estilobase.html</code>, y luego <strong>volver a implementar</strong>.</li>
+            <li>Cerrar por vacaciones → <strong>Hoja</strong>, pestaña <code>Bloqueos</code>.</li>
+            <li>Cambiar el mensaje de confirmación → <strong>Hoja</strong>, pestaña <code>Config</code> (mensajes automáticos).</li>
+          </ul>
+          <p><strong>Regla de oro:</strong> si es un <em>dato</em>, se toca la hoja. Si es <em>diseño o comportamiento</em>, se toca el código y hay que volver a implementar.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 6 · Simulación de una reserva completa</h3>
+      <p>Con tu agenda ya instalada, haz este recorrido completo y anota el resultado:</p>
+      <ol>
+        <li>Reserva una cita a nombre de "Prueba Uno" para mañana a las 10:00.</li>
+        <li>Comprueba que aparece en la pestaña <code>Reservas</code>.</li>
+        <li>Entra al panel con tu PIN y confírmala.</li>
+        <li>Envía el WhatsApp de confirmación.</li>
+        <li>Cancela la cita desde el panel.</li>
+        <li>Comprueba que ese horario vuelve a estar disponible en la página de reservas.</li>
+      </ol>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <p>
+            Al cancelar, <strong>el horario vuelve a quedar libre</strong>. Si no vuelve a aparecer disponible,
+            revisa que la cancelación se haya guardado (recarga la página de reservas) y que no exista un
+            <strong>bloqueo</strong> en la pestaña <code>Bloqueos</code> para esa fecha.
+          </p>
+          <p>
+            Recuerda borrar la fila de prueba de la pestaña <code>Reservas</code> antes de empezar a recibir clientes reales.
+          </p>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h3>Ejercicio 7 · Tu nombre en Netlify</h3>
+      <p>Tu negocio se llama "Estética Ana" y estás en Sevilla. Propón tres nombres de sitio válidos para Netlify.</p>
+      <details>
+        <summary>Ver solución explicada</summary>
+        <div class="inner">
+          <p>Ejemplos válidos (minúsculas, sin espacios ni tildes):</p>
+          <ul>
+            <li><code>estetica-ana</code></li>
+            <li><code>estetica-ana-sevilla</code></li>
+            <li><code>ana-estetica</code></li>
+          </ul>
+          <p><strong>Inválidos:</strong> <code>Estética Ana</code> (mayúscula, espacio y tilde), <code>estetica ana</code> (espacio).</p>
+          <p>Si el nombre que quieres ya está ocupado, añade tu ciudad o una palabra extra.</p>
+        </div>
+      </details>
+    </div>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: ERRORES
+       ============================================================ -->
+  <section class="panel" id="panel-errores" data-print-title="ERRORES Y PREGUNTAS FRECUENTES">
+
+    <div class="card">
+      <h2>🚨 Errores frecuentes y cómo corregirlos</h2>
+      <p>Busca tu síntoma en la tabla. Casi todos los problemas tienen una causa muy concreta.</p>
+
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr><th>Síntoma</th><th>Causa más probable</th><th>Solución</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>La página de reservas no carga o da error</td>
+              <td>URL incorrecta o acceso restringido</td>
+              <td>Usa la URL que termina en <code>/exec</code> y pon "Quién tiene acceso" en <strong>Cualquier persona</strong>.</td>
+            </tr>
+            <tr>
+              <td>Error raro al abrir la agenda</td>
+              <td>Nombres de archivos HTML mal escritos</td>
+              <td>Revisa que sean exactamente <code>index</code>, <code>admin</code>, <code>estilobase</code>, <code>iconobase64</code>.</td>
+            </tr>
+            <tr>
+              <td>No aparecen horarios disponibles</td>
+              <td>Horarios vacíos, día bloqueado o servicio demasiado largo</td>
+              <td>Revisa <code>Horarios</code>, <code>Bloqueos</code> y que el servicio quepa en el bloque.</td>
+            </tr>
+            <tr>
+              <td>Las horas salen desfasadas</td>
+              <td>Zona horaria incorrecta</td>
+              <td>Corrige <code>timeZone</code> en <code>appsscript.json</code> (Paso 3.5).</td>
+            </tr>
+            <tr>
+              <td>No puedo entrar al panel de administración</td>
+              <td>Propiedad mal escrita o PIN equivocado</td>
+              <td>Verifica que se llame exactamente <code>admin_pin</code> y que el valor sea el que recuerdas.</td>
+            </tr>
+            <tr>
+              <td>Hice cambios en el código y no se ven</td>
+              <td>No se ha creado una nueva versión</td>
+              <td>Implementar &gt; Administrar implementaciones &gt; lápiz ✏️ &gt; Versión: <strong>Nueva versión</strong> &gt; Implementar.</td>
+            </tr>
+            <tr>
+              <td>El botón de WhatsApp no funciona</td>
+              <td>Teléfono mal formateado</td>
+              <td>Revisa <code>Config</code>: solo números, con código de país, sin <code>+</code>, espacios ni guiones.</td>
+            </tr>
+            <tr>
+              <td>Los cambios en la hoja no aparecen</td>
+              <td>Estás editando el Excel original, no la Hoja de cálculo de Google</td>
+              <td>Comprueba que el archivo <strong>no</strong> tenga la etiqueta <code>.XLSX</code> junto al nombre.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>❓ Preguntas frecuentes</h2>
+
+      <details>
+        <summary>1. Mi página de reservas no carga o muestra un error.</summary>
+        <div class="inner">
+          <ul>
+            <li>Comprueba que usas la URL que termina en <strong><code>/exec</code></strong>.</li>
+            <li>Verifica que en la implementación <strong>"Quién tiene acceso"</strong> sea <strong>"Cualquier persona"</strong>.</li>
+            <li>Revisa que los 4 archivos HTML tengan los nombres exactos: <code>index</code>, <code>admin</code>, <code>estilobase</code>, <code>iconobase64</code>.</li>
+            <li>Confirma que la hoja es una <strong>Hoja de cálculo de Google</strong> y no un <code>.xlsx</code>.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>2. No me aparecen horarios disponibles.</summary>
+        <div class="inner">
+          <ul>
+            <li>Revisa la pestaña <strong><code>Horarios</code></strong>: ¿hay bloques para ese día de la semana?</li>
+            <li>Revisa la pestaña <strong><code>Bloqueos</code></strong>: puede que esa fecha esté bloqueada.</li>
+            <li>Comprueba que el <strong>servicio</strong> tenga una duración (en minutos) y que <strong>quepa</strong> en el bloque.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>3. Las horas salen desfasadas.</summary>
+        <div class="inner">
+          <p>Revisa la zona horaria en <strong><code>appsscript.json</code></strong> (Paso 3.5).</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>4. No puedo entrar al panel de administración.</summary>
+        <div class="inner">
+          <ul>
+            <li>Verifica que la propiedad se llame exactamente <strong><code>admin_pin</code></strong> (minúsculas, guion bajo, sin espacios).</li>
+            <li>Comprueba que escribes el mismo valor que guardaste.</li>
+            <li>Confirma que añadiste el acceso correcto al final de la URL (<code>?page=admin</code>).</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>5. Hice cambios en el código y no se ven.</summary>
+        <div class="inner">
+          <p>
+            Ve a <strong>Implementar &gt; Administrar implementaciones</strong>, haz clic en el <strong>lápiz ✏️</strong>,
+            en <strong>Versión</strong> elige <strong>"Nueva versión"</strong> y pulsa <strong>"Implementar"</strong>.
+            Así tu URL <strong>se mantiene igual</strong>.
+          </p>
+          <div class="box warn" style="margin-top:10px;">
+            <strong>⚠️ Importante:</strong> si eliges "Nueva implementación" en lugar de editar la existente, Google crea
+            <strong>otra URL distinta</strong> y la anterior seguirá mostrando la versión vieja. Para no perder tu enlace,
+            <strong>edita la implementación existente</strong>.
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>6. El botón de WhatsApp no funciona.</summary>
+        <div class="inner">
+          <p>Revisa el teléfono en <code>Config</code>: solo números, <strong>con código de país</strong> y sin <code>+</code>, espacios ni guiones.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>7. ¿Esto tiene algún costo?</summary>
+        <div class="inner">
+          <p>
+            Google Sheets, Apps Script y el plan gratuito de Netlify son <strong>gratuitos</strong> para el uso normal
+            de un pequeño negocio. Los servicios pueden cambiar sus condiciones con el tiempo, por lo que conviene
+            revisar sus páginas oficiales de vez en cuando.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>8. ¿Mis clientes necesitan una cuenta de Google?</summary>
+        <div class="inner">
+          <p><strong>No.</strong> Reservan desde cualquier navegador sin iniciar sesión.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>9. ¿Puedo borrar el archivo de Netlify si me arrepiento?</summary>
+        <div class="inner">
+          <p>Sí, puedes eliminar el sitio desde su configuración sin afectar a tu agenda original de Google.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>✅ Ejemplos correctos e incorrectos</h2>
+
+      <h3>Propiedad del PIN</h3>
+      <div class="box ok"><strong>✔ Correcto:</strong> <code>admin_pin</code></div>
+      <div class="box bad"><strong>✘ Incorrecto:</strong> <code>Admin PIN</code> · <code>admin-pin</code> · <code>adminpin</code> · <code> admin_pin </code> (con espacios)</div>
+
+      <h3>Nombres de archivos HTML en Apps Script</h3>
+      <div class="box ok"><strong>✔ Correcto:</strong> <code>index</code> · <code>admin</code> · <code>estilobase</code> · <code>iconobase64</code></div>
+      <div class="box bad"><strong>✘ Incorrecto:</strong> <code>Index</code> · <code>Estilo Base</code> · <code>icono_base64</code> · <code>index.html.html</code></div>
+
+      <h3>Teléfono de WhatsApp</h3>
+      <div class="box ok"><strong>✔ Correcto:</strong> <code>34600123456</code></div>
+      <div class="box bad"><strong>✘ Incorrecto:</strong> <code>+34 600 12 34 56</code> · <code>600-12-34-56</code> · <code>(34) 600 123 456</code></div>
+
+      <h3>URL de la aplicación web</h3>
+      <div class="box ok"><strong>✔ Correcto:</strong> termina en <code>/exec</code> y el acceso es "Cualquier persona".</div>
+      <div class="box bad"><strong>✘ Incorrecto:</strong> termina en <code>/dev</code> o el acceso es "Solo yo".</div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: RESUMEN
+       ============================================================ -->
+  <section class="panel" id="panel-resumen" data-print-title="RESUMEN">
+
+    <div class="card">
+      <h2>📝 Resumen capítulo por capítulo</h2>
+
+      <h3>Paso 1 · Descarga y preparación</h3>
+      <p>Descargas el ZIP, lo descomprimes y compruebas que tienes el Excel, la carpeta de Apps Script y la de Netlify.</p>
+
+      <h3>Paso 2 · Base de datos</h3>
+      <p>
+        Subes el Excel a Drive, lo conviertes con <strong>Archivo &gt; Guardar como hoja de cálculo de Google</strong>,
+        borras el <code>.xlsx</code> original y rellenas tus datos en las 6 pestañas.
+      </p>
+
+      <h3>Paso 3 · Código</h3>
+      <p>
+        Abres Apps Script desde Extensiones, pegas <code>code.gs</code>, creas los 4 HTML, activas el manifiesto,
+        corriges la zona horaria y creas la propiedad <code>admin_pin</code>.
+      </p>
+
+      <h3>Paso 4 · Publicación</h3>
+      <p>
+        Creas una implementación de tipo <strong>Aplicación web</strong>, con <strong>Ejecutar como: Yo</strong> y
+        <strong>Acceso: Cualquier persona</strong>, autorizas los permisos y copias la URL terminada en <code>/exec</code>.
+      </p>
+
+      <h3>Paso 5 · Prueba y panel</h3>
+      <p>
+        Haces una reserva de prueba, compruebas que aparece en <code>Reservas</code>, entras al panel con el PIN,
+        confirmas, cancelas y pruebas el WhatsApp.
+      </p>
+
+      <h3>Paso 6 · Netlify (opcional)</h3>
+      <p>
+        Creas una cuenta gratuita, cambias la URL dentro del <code>index.html</code> de la carpeta Netlify,
+        arrastras la carpeta y eliges un nombre corto para tu sitio.
+      </p>
+
+      <h3>Paso 7 · Mantenimiento</h3>
+      <p>
+        Todo el día a día se gestiona desde la hoja de cálculo. Solo tocas el código si cambias el diseño o el comportamiento.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🔑 Las 5 reglas de oro</h2>
+      <ol>
+        <li><strong>Una sola acción por paso.</strong> Si dudas, vuelve al paso anterior y comprueba el resultado.</li>
+        <li><strong>Nombres exactos.</strong> <code>admin_pin</code>, <code>index</code>, <code>admin</code>, <code>estilobase</code>, <code>iconobase64</code>. Sin espacios ni mayúsculas raras.</li>
+        <li><strong>Acceso "Cualquier persona"</strong> en la implementación, o tus clientes no podrán entrar.</li>
+        <li><strong>Zona horaria correcta</strong> en <code>appsscript.json</code>, o las citas saldrán desfasadas.</li>
+        <li><strong>Datos en la hoja, código en Apps Script.</strong> No mezcles: si cambias datos, no hace falta reimplementar.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>🧾 Glosario rápido</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Término</th><th>Definición breve</th></tr></thead>
+          <tbody>
+            <tr><td>Apps Script</td><td>El "cerebro" que hace funcionar la hoja como web de reservas.</td></tr>
+            <tr><td>Backend</td><td>La trastienda: hoja de cálculo + Apps Script.</td></tr>
+            <tr><td>Frontend</td><td>El escaparate: lo que ve el cliente.</td></tr>
+            <tr><td>Implementar</td><td>Publicar la aplicación para que otros la usen.</td></tr>
+            <tr><td>Manifiesto</td><td>Archivo de ajustes del proyecto (<code>appsscript.json</code>).</td></tr>
+            <tr><td>PIN</td><td>Llave numérica que protege el panel de administración.</td></tr>
+            <tr><td>URL <code>/exec</code></td><td>La dirección pública y definitiva de tu agenda.</td></tr>
+            <tr><td>URL <code>/dev</code></td><td>Dirección de pruebas que solo funciona para ti.</td></tr>
+            <tr><td>Zona horaria</td><td>Ajuste que decide a qué hora se muestran las citas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🎯 Checklist final del proyecto</h2>
+      <label class="chk"><input type="checkbox" data-k="f1"><span>Tengo una Hoja de cálculo de Google con las 6 pestañas rellenadas.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f2"><span>Mi proyecto de Apps Script tiene <code>code.gs</code>, 4 HTML y <code>appsscript.json</code>.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f3"><span>Mi zona horaria es la correcta.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f4"><span>Mi propiedad <code>admin_pin</code> existe y tiene un PIN seguro.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f5"><span>Mi implementación es de tipo Aplicación web, "Ejecutar como: Yo" y "Acceso: Cualquier persona".</span></label>
+      <label class="chk"><input type="checkbox" data-k="f6"><span>Guardé mi URL terminada en <code>/exec</code>.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f7"><span>Hice una reserva de prueba y la borré después.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f8"><span>Probé el panel, confirmar, cancelar y el botón de WhatsApp.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f9"><span>(Opcional) Tengo mi enlace corto en Netlify funcionando.</span></label>
+      <label class="chk"><input type="checkbox" data-k="f10"><span>Activé la verificación en dos pasos en mi cuenta de Google.</span></label>
+    </div>
+
+    <div class="card">
+      <h2>🚀 Tus próximos pasos recomendados</h2>
+      <label class="chk"><input type="checkbox" data-k="n1"><span>Comparte el enlace en tu <strong>Instagram, WhatsApp y Google Maps</strong>.</span></label>
+      <label class="chk"><input type="checkbox" data-k="n2"><span>Haz <strong>un par de reservas de prueba</strong> con amigos o familiares antes de anunciarlo.</span></label>
+      <label class="chk"><input type="checkbox" data-k="n3"><span>Revisa tu <strong>panel de administración</strong> cada mañana para confirmar las citas del día.</span></label>
+      <label class="chk"><input type="checkbox" data-k="n4"><span>Mantén al día la pestaña <strong><code>Bloqueos</code></strong> con tus festivos y vacaciones.</span></label>
+
+      <div class="box tip">
+        <strong>💬 Recuerda:</strong> la primera vez siempre cuesta un poco más. Cada paso que diste hoy lo harás en
+        minutos la próxima vez. ¡Mucho éxito con tu negocio!
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: FUENTES
+       ============================================================ -->
+  <section class="panel" id="panel-fuentes" data-print-title="FUENTES">
+
+    <div class="card">
+      <h2>📚 Fuentes utilizadas</h2>
+      <p>Este tutorial HTML se construyó a partir de los siguientes documentos, que fueron la única fuente de contenido:</p>
+      <ul>
+        <li><strong><code>agenda-virtual-reservas-gratis-tutorial.md</code></strong> — Documento base con todo el contenido del tutorial: los 7 pasos, el mini diccionario, las 6 pestañas de la hoja de cálculo, las preguntas frecuentes y los consejos de seguridad.</li>
+        <li><strong><code>PROMPT_MAESTRO_TUTORIALES_HTML.txt</code></strong> — Especificación de formato, estructura de pestañas, estilo pedagógico, requisitos de accesibilidad y reglas de impresión.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>📦 Archivos del paquete mencionados en el documento base</h2>
+      <p>
+        El tutorial hace referencia a un paquete ZIP que <strong>no forma parte de estos dos documentos</strong>.
+        Estos son los archivos que el paquete debe contener según el documento base:
+      </p>
+      <ul>
+        <li><code>Base de datos.xlsx</code> — Excel con las 6 pestañas.</li>
+        <li><code>code.gs</code> — Código principal de Apps Script.</li>
+        <li><code>index.html</code> — Página pública de reservas.</li>
+        <li><code>admin.html</code> — Panel privado de administración.</li>
+        <li><code>estilobase.html</code> — Estilos y diseño.</li>
+        <li><code>iconobase64.html</code> — Icono en base64.</li>
+        <li><code>appsscript.json</code> — Manifiesto del proyecto.</li>
+        <li>Carpeta <code>Netlify/</code> — Con su propio <code>index.html</code>.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>⚠️ Información faltante en el documento base</h2>
+      <p>Siguiendo la indicación de no inventar datos, se señalan explícitamente los puntos que el documento original deja abiertos:</p>
+      <ul>
+        <li>
+          <strong>El enlace de descarga del paquete ZIP:</strong> el documento lo deja como marcador de posición
+          (<code>[ENLACE DE DESCARGA DEL PAQUETE .ZIP]</code>). Sin ese enlace real no se puede completar el Paso 1.
+        </li>
+        <li>
+          <strong>La sintaxis exacta de la URL del panel de administración:</strong> el documento indica
+          <code>?page=admin</code> como ejemplo, pero advierte que "si el sistema de tu paquete usa otra forma de acceso
+          (por ejemplo <code>?admin=1</code> o <code>?view=admin</code>), tu archivo <code>code.gs</code> indica la correcta".
+          Es decir, la sintaxis definitiva depende del paquete descargado.
+        </li>
+        <li>
+          <strong>El contenido concreto del código y de los archivos HTML:</strong> no se reproducen aquí porque el
+          documento base no los incluye; solo se describe qué son y dónde van.
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>🛠️ Sobre este archivo HTML</h2>
+      <p>
+        Este tutorial es un <strong>único archivo HTML autónomo</strong>. Incluye su propio HTML, CSS, JavaScript y SVG.
+        No usa archivos externos, CDN, librerías ni fuentes de internet, por lo que funciona abriéndolo directamente
+        en el navegador, incluso sin conexión.
+      </p>
+    </div>
+
+  </section>
+
+  <!-- ============================================================
+       PANEL: CRÉDITOS
+       ============================================================ -->
+  <section class="panel" id="panel-creditos" data-print-title="CRÉDITOS">
+
+    <div class="card">
+      <h2 class="credit-name">Rubén Sbarsky</h2>
+      <p class="credit-sub">Autor del tutorial</p>
+
+      <p><strong>Fecha y hora de creación:</strong></p>
+      <p class="fixed-date">01/10/2026 — 09:15:42</p>
+    </div>
+
+    <div class="card">
+      <svg class="svg-hero" viewBox="0 0 420 260" role="img"
+           aria-label="Ilustración animada: un calendario que se llena de citas, un reloj girando, un mensaje de WhatsApp y una confirmación con check">
+        <use href="#svgHero"></use>
+      </svg>
+    </div>
+
+    <div class="card">
+      <h2>Sobre este tutorial</h2>
+      <p>
+        Tutorial interactivo creado a partir del documento <code>agenda-virtual-reservas-gratis-tutorial.md</code>,
+        transformado en una aplicación web educativa con pestañas, buscador, checklist con progreso guardado y
+        exportación a PDF.
+      </p>
+      <p>
+        El objetivo es que cualquier dueño de un pequeño negocio pueda tener su propia agenda de reservas
+        <strong>gratis</strong>, <strong>sin pagar mensualidades</strong> y <strong>sin saber programar</strong>.
+      </p>
+    </div>
+
+  </section>
+
+</div>
+
+<!-- Botón volver arriba -->
+<button class="to-top no-print" id="toTop" aria-label="Volver arriba">↑</button>
+
+<!-- Toast -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     0. UTILIDADES
+     ============================================================ */
+  function $(sel, ctx){ return (ctx||document).querySelector(sel); }
+  function $$(sel, ctx){ return Array.prototype.slice.call((ctx||document).querySelectorAll(sel)); }
+
+  var toastTimer = null;
+  function toast(msg){
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 2600);
+  }
+
+  /* ============================================================
+     1. PESTAÑAS
+     ============================================================ */
+  var tabs = $$('.tab');
+  var panels = $$('.panel');
+
+  function activateTab(id, scroll){
+    tabs.forEach(function(t){ t.classList.toggle('active', t.dataset.tab === id); });
+    panels.forEach(function(p){ p.classList.toggle('active', p.id === 'panel-' + id); });
+    try{ localStorage.setItem('agv_tab', id); }catch(e){}
+    if(scroll !== false){
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+  }
+
+  tabs.forEach(function(t){
+    t.addEventListener('click', function(){ activateTab(t.dataset.tab, true); });
+  });
+
+  // Restaurar pestaña guardada
+  try{
+    var savedTab = localStorage.getItem('agv_tab');
+    if(savedTab && document.getElementById('panel-' + savedTab)){
+      activateTab(savedTab, false);
+    }
+  }catch(e){}
+
+  /* ============================================================
+     2. CHECKLISTS + PROGRESO (localStorage)
+     ============================================================ */
+  var boxes = $$('.chk input[type="checkbox"]');
+
+  function updateProgress(){
+    var total = boxes.length;
+    if(!total) return;
+    var done = boxes.filter(function(b){ return b.checked; }).length;
+    var pct = Math.round(done / total * 100);
+    $('#progressBar').style.width = pct + '%';
+    $('#progressBar').title = pct + '% completado';
+  }
+
+  boxes.forEach(function(cb){
+    var key = 'agv_' + cb.dataset.k;
+    try{
+      if(localStorage.getItem(key) === '1'){ cb.checked = true; }
+    }catch(e){}
+    cb.addEventListener('change', function(){
+      try{ localStorage.setItem(key, cb.checked ? '1' : '0'); }catch(e){}
+      updateProgress();
+    });
+  });
+  updateProgress();
+
+  // Reiniciar progreso
+  $('#btnReset').addEventListener('click', function(){
+    if(!confirm('¿Seguro que quieres reiniciar todo el progreso guardado?')) return;
+    boxes.forEach(function(cb){
+      cb.checked = false;
+      try{ localStorage.removeItem('agv_' + cb.dataset.k); }catch(e){}
+    });
+    updateProgress();
+    toast('Progreso reiniciado');
+  });
+
+  /* ============================================================
+     3. TAMAÑO DE TEXTO A− / A+
+     ============================================================ */
+  var sizes = [14,15,16,17,18,19,20,22];
+  var sizeIdx = 2;
+  try{
+    var savedSize = parseInt(localStorage.getItem('agv_size'), 10);
+    if(!isNaN(savedSize) && savedSize >= 0 && savedSize < sizes.length){ sizeIdx = savedSize; }
+  }catch(e){}
+  function applySize(){
+    document.documentElement.style.fontSize = sizes[sizeIdx] + 'px';
+    try{ localStorage.setItem('agv_size', String(sizeIdx)); }catch(e){}
+  }
+  applySize();
+  $('#btnPlus').addEventListener('click', function(){
+    if(sizeIdx < sizes.length - 1){ sizeIdx++; applySize(); }
+  });
+  $('#btnMinus').addEventListener('click', function(){
+    if(sizeIdx > 0){ sizeIdx--; applySize(); }
+  });
+
+  /* ============================================================
+     4. MODO OSCURO / CLARO
+     ============================================================ */
+  var btnTheme = $('#btnTheme');
+  function applyTheme(light){
+    document.body.classList.toggle('light', light);
+    btnTheme.textContent = light ? '☀️' : '🌙';
+    try{ localStorage.setItem('agv_theme', light ? 'light' : 'dark'); }catch(e){}
+  }
+  try{
+    applyTheme(localStorage.getItem('agv_theme') === 'light');
+  }catch(e){}
+  btnTheme.addEventListener('click', function(){
+    applyTheme(!document.body.classList.contains('light'));
+  });
+
+  /* ============================================================
+     5. BOTONES COPIAR
+     ============================================================ */
+  $$('.copyBtn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target = document.getElementById(btn.dataset.copy);
+      if(!target) return;
+      var text = target.textContent;
+      var ok = false;
+      try{
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly','');
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        document.body.appendChild(ta);
+        ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      }catch(e){ ok = false; }
+
+      if(!ok && navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){
+          toast('Copiado: ' + text);
+        }).catch(function(){
+          toast('No se pudo copiar. Selecciónalo manualmente.');
+        });
+        return;
+      }
+      toast(ok ? ('Copiado: ' + text) : 'No se pudo copiar. Selecciónalo manualmente.');
+    });
+  });
+
+  /* ============================================================
+     6. BUSCADOR CON RESALTADO
+     ============================================================ */
+  var searchInput = $('#searchInput');
+  var searchInfo = $('#searchInfo');
+  var searchTimer = null;
+
+  function escapeRx(s){
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  function clearHighlights(){
+    var marks = $$('mark.search-hl');
+    marks.forEach(function(m){
+      var parent = m.parentNode;
+      if(!parent) return;
+      parent.replaceChild(document.createTextNode(m.textContent), m);
+    });
+    panels.forEach(function(p){
+      if(p.normalize) p.normalize();
+    });
+  }
+
+  function highlight(query){
+    clearHighlights();
+    if(!query || query.length < 2){
+      searchInfo.textContent = '';
+      return 0;
+    }
+
+    var walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode: function(node){
+          if(!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+          var p = node.parentElement;
+          if(!p) return NodeFilter.FILTER_REJECT;
+          if(p.closest('script, style, noscript, svg, .toolbar, #toast')) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      },
+      false
+    );
+
+    var nodes = [];
+    while(walker.nextNode()){ nodes.push(walker.currentNode); }
+
+    var rx = new RegExp(escapeRx(query), 'gi');
+    var count = 0;
+
+    nodes.forEach(function(node){
+      var text = node.nodeValue;
+      rx.lastIndex = 0;
+      if(!rx.test(text)) return;
+      rx.lastIndex = 0;
+
+      var frag = document.createDocumentFragment();
+      var last = 0, m;
+      while((m = rx.exec(text)) !== null){
+        if(m[0].length === 0){ rx.lastIndex++; continue; }
+        if(m.index > last){
+          frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+        }
+        var mark = document.createElement('mark');
+        mark.className = 'search-hl';
+        mark.textContent = m[0];
+        frag.appendChild(mark);
+        count++;
+        last = m.index + m[0].length;
+      }
+      if(last < text.length){
+        frag.appendChild(document.createTextNode(text.slice(last)));
+      }
+      if(node.parentNode){
+        node.parentNode.replaceChild(frag, node);
+      }
+    });
+
+    searchInfo.textContent = count > 0 ? (count + ' coincidencia' + (count === 1 ? '' : 's')) : 'sin resultados';
+    return count;
+  }
+
+  function jumpToFirstMatch(){
+    var first = $('mark.search-hl');
+    if(!first) return;
+    var panel = first.closest('.panel');
+    if(panel){
+      activateTab(panel.id.replace('panel-',''), false);
+    }
+    setTimeout(function(){
+      first.scrollIntoView({block:'center', behavior:'smooth'});
+    }, 60);
+  }
+
+  searchInput.addEventListener('input', function(){
+    clearTimeout(searchTimer);
+    var q = searchInput.value.trim();
+    searchTimer = setTimeout(function(){
+      highlight(q);
+    }, 220);
+  });
+
+  searchInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      clearTimeout(searchTimer);
+      highlight(searchInput.value.trim());
+      jumpToFirstMatch();
+    }
+    if(e.key === 'Escape'){
+      searchInput.value = '';
+      highlight('');
+    }
+  });
+
+  /* ============================================================
+     7. BOTÓN VOLVER ARRIBA
+     ============================================================ */
+  var toTop = $('#toTop');
+  window.addEventListener('scroll', function(){
+    if(window.scrollY > 400){ toTop.classList.add('show'); }
+    else{ toTop.classList.remove('show'); }
+  }, {passive:true});
+
+  toTop.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ============================================================
+     8. IMPRIMIR / GUARDAR COMO PDF
+     ============================================================ */
+  function inIframe(){
+    try{ return window.self !== window.top; }catch(e){ return true; }
+  }
+
+  $('#btnPrint').addEventListener('click', function(){
+    // 1. Abrir todos los <details> para que su contenido salga en el PDF
+    var opened = [];
+    $$('details').forEach(function(d){
+      if(!d.open){ d.open = true; opened.push(d); }
+    });
+
+    // 2. Mostrar todos los paneles (por si el navegador ignora @media print)
+    document.body.classList.add('printing');
+
+    var restored = false;
+    function restore(){
+      if(restored) return;
+      restored = true;
+      opened.forEach(function(d){ d.open = false; });
+      document.body.classList.remove('printing');
+    }
+
+    window.addEventListener('afterprint', restore, {once:true});
+
+    if(inIframe()){
+      toast('Si no se abre el diálogo de impresión, abre este archivo directamente en el navegador.');
+    }
+
+    try{
+      window.print();
+    }catch(e){
+      toast('Tu visor bloquea la impresión. Abre el archivo en el navegador.');
+    }
+
+    // Respaldo por si afterprint no se dispara
+    setTimeout(restore, 4000);
+  });
+
+  /* ============================================================
+     9. ATAJOS DE TECLADO
+     ============================================================ */
+  document.addEventListener('keydown', function(e){
+    if(e.ctrlKey && e.key === 'f'){
+      // Dejar que el navegador busque, pero enfocar el buscador propio con Alt+F
+    }
+    if(e.altKey && (e.key === 'f' || e.key === 'F')){
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
